@@ -28,10 +28,10 @@ test-quick:
 full: lint-full typecheck-full test-full
 
 lint-full:
-	$(PY) -m flake8
+	$(PY) -m flake8 pypnc
 
 typecheck-full:
-	$(PY) -m mypy
+	$(PY) -m mypy pypnc
 
 test-full:
 	$(PY) -m pytest -q
