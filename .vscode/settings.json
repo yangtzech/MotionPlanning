@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "~/miniconda3/envs/python_robotics/bin/python",
+    "terminal.integrated.env.linux": {
+        "PATH": "${env:HOME}/.local/bin:${env:PATH}"
+    }
+}
