@@ -2,8 +2,9 @@
 
 Adapted from Control/Pure_Pursuit.py to use pypnc models and utils.
 """
+
 import math
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -59,7 +60,7 @@ class PATH:
         self.cx = cx
         self.cy = cy
         self.ind_end = len(self.cx) - 1
-        self.index_old = None
+        self.index_old: Optional[int] = None
 
     def target_index(self, node: Node) -> Tuple[int, float]:
         if self.index_old is None:
@@ -67,7 +68,8 @@ class PATH:
 
         Lf = Config.kf * node.v + Config.Ld
 
-        for ind in range(self.index_old, self.ind_end + 1):
+        start_ind = self.index_old if self.index_old is not None else 0
+        for ind in range(start_ind, self.ind_end + 1):
             if self.calc_distance(node, ind) > Lf:
                 self.index_old = ind
                 return ind, Lf
@@ -93,8 +95,15 @@ def pure_pursuit(node: Node, ref_path: PATH, index_old: int):
     tx = ref_path.cx[ind]
     ty = ref_path.cy[ind]
 
-    alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
-    delta = math.atan2(2.0 * Config.WB * math.sin(alpha), Lf)
+    alpha = (
+        math.atan2(ty - node.y, tx - node.x)
+        - node.yaw
+    )
+
+    delta = math.atan2(
+        2.0 * Config.WB * math.sin(alpha),
+        Lf,
+    )
 
     return delta, ind
 
@@ -124,8 +133,7 @@ def generate_path(s: List[Tuple[float, float, float]]):
         s_x, s_y, s_yaw = s[i][0], s[i][1], np.deg2rad(s[i][2])
         g_x, g_y, g_yaw = s[i + 1][0], s[i + 1][1], np.deg2rad(s[i + 1][2])
 
-        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw,
-                                      g_x, g_y, g_yaw, max_c)
+        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw, g_x, g_y, g_yaw, max_c)
 
         ix = path_i.x
         iy = path_i.y
@@ -147,8 +155,11 @@ def generate_path(s: List[Tuple[float, float, float]]):
                 path_y.append(y_rec)
                 yaw.append(yaw_rec)
                 direct.append(direct_rec)
-                x_rec, y_rec, yaw_rec, direct_rec = \
-                    [x_rec[-1]], [y_rec[-1]], [yaw_rec[-1]], [-direct_rec[-1]]
+                # preserve last point as start of next segment, invert direction
+                x_rec = [x_rec[-1]]
+                y_rec = [y_rec[-1]]
+                yaw_rec = [yaw_rec[-1]]
+                direct_rec = [-direct_rec[-1]]
 
     path_x.append(x_rec)
     path_y.append(y_rec)
