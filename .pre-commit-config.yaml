@@ -23,6 +23,5 @@ repos:
         name: Run make checks before push
         entry: make checks
         language: system
-        stages: [push]
         pass_filenames: false
         always_run: false
