@@ -1,5 +1,6 @@
 import importlib
-from pypnc.controllers import generate_path, Node
+
+from pypnc.controllers import Node, generate_path
 
 pp = importlib.import_module("pypnc.controllers.pure_pursuit")
 
