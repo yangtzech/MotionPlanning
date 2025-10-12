@@ -95,10 +95,7 @@ def pure_pursuit(node: Node, ref_path: PATH, index_old: int):
     tx = ref_path.cx[ind]
     ty = ref_path.cy[ind]
 
-    alpha = (
-        math.atan2(ty - node.y, tx - node.x)
-        - node.yaw
-    )
+    alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
 
     delta = math.atan2(
         2.0 * Config.WB * math.sin(alpha),
