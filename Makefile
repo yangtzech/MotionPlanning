@@ -39,3 +39,6 @@ test-full:
 lint: lint-full
 typecheck: typecheck-full
 test: test-full
+
+# Combined checks target: lint + typecheck + tests (used in CI or locally)
+checks: lint typecheck test
