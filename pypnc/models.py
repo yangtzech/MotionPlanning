@@ -26,8 +26,8 @@ class Trajectory:
 
     def to_array(self) -> np.ndarray:
         """Convert trajectory to Nx5 numpy array: x,y,yaw,v,steer"""
-        arr = []
+        arr: List[List[float]] = []
         for s in self.states:
-            steer = s.steer if s.steer is not None else 0.0
+            steer: float = s.steer if s.steer is not None else 0.0
             arr.append([s.x, s.y, s.yaw, s.v, steer])
-        return np.array(arr)
+        return np.array(arr, dtype=float)
