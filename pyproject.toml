@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.metadata]
+name = "pypnc"
+version = "0.0.1"
+description = "Refactored PyPnC algorithms package"
