@@ -19,7 +19,8 @@ lint-quick:
 	$(PY) -m flake8 pypnc
 
 typecheck-quick:
-	$(PY) -m mypy pypnc
+	@echo "Running mypy (quick) against pypnc..."
+	$(PY) -m mypy pypnc 2>&1 | tee mypy-output.txt
 
 test-quick:
 	$(PY) -m pytest -q
@@ -31,13 +32,15 @@ lint-full:
 	$(PY) -m flake8 pypnc
 
 typecheck-full:
-	$(PY) -m mypy pypnc
+	@echo "Running mypy (full) against pypnc..."
+	$(PY) -m mypy pypnc 2>&1 | tee mypy-output.txt
 
 test-full:
 	$(PY) -m pytest -q
 
 lint: lint-full
 typecheck: typecheck-full
+	@echo "typecheck finished, mypy output saved to mypy-output.txt"
 test: test-full
 
 # Combined checks target: lint + typecheck + tests (used in CI or locally)
