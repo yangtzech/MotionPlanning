@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3
+        files: ^pypnc/
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        language_version: python3
+        files: ^pypnc/
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        additional_dependencies: ["flake8==6.1.0"]
+        files: ^pypnc/
+
+  # mypy in pre-commit can be slow; include but do not run by default.
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: mypy (optional)
+        entry: mypy --config-file mypy.ini pypnc
+        language: system
+        stages: [commit]
+        always_run: false
+        pass_filenames: false
+        files: ^pypnc/
