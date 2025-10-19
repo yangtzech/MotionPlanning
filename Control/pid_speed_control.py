@@ -13,7 +13,7 @@ class PIDSpeedController(ControllerBase):
 
     def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
         # 速度控制逻辑，可根据路径或目标点调整
-        target_ind, _ = reference.target_index(node)
+        target_ind = reference.calc_nearest_ind(node)
         target_v = reference.cv[target_ind]
 
         # 计算距离
@@ -21,7 +21,7 @@ class PIDSpeedController(ControllerBase):
         yt = node.y + self.config.dc * math.sin(node.yaw)
         dist = math.hypot(xt - reference.cx[-1], yt - reference.cy[-1])
 
-        a = self.config.Kp * (target_v - node.v * node.direct)
+        a = self.config.pid.Kp * (target_v - node.v * node.direct)
 
         if dist < self.config.dist_stop:
             if node.v > 3.0:
@@ -30,4 +30,5 @@ class PIDSpeedController(ControllerBase):
                 a = -1.0
         return ControlCommand(
             acceleration=a,
+            target_ind=target_ind,
         )

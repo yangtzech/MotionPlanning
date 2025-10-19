@@ -32,10 +32,7 @@ max_steer_angle = np.deg2rad(40)  # [rad]
 max_speed = 30 / 3.6  # [km/h]
 
 
-class Config:
-    # PID config
-    Kp = 0.3  # proportional gain
-
+class BaseConfig:
     # system config
     Ld = 2.6  # look ahead distance
     kf = 0.1  # look forward gain
@@ -54,3 +51,25 @@ class Config:
     MAX_STEER = 0.30
     MAX_ACCELERATION = 5.0
     MAX_SPEED = 30.0 / 3.6  # [m/s]
+
+
+class PurePursuitConfig:
+    Ld = 2.6
+    kf = 0.1
+    # ...PurePursuit专用参数...
+
+
+class StanleyConfig:
+    k = 0.5
+    # ...Stanley专用参数...
+
+
+class PIDConfig:
+    # PID config
+    Kp = 0.3  # proportional gain
+
+
+class Config(BaseConfig):
+    pid = PIDConfig()
+    pure_pursuit = PurePursuitConfig()
+    stanley = StanleyConfig()

@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from utils import pi_2_pi
 
 
 class Node:
@@ -42,9 +43,11 @@ class Nodes:
 
 
 class PATH:
-    def __init__(self, cx, cy, config, cv=None):
+    def __init__(self, cx, cy, cyaw, cdirect, config, cv=None):
         self.cx = cx
         self.cy = cy
+        self.cyaw = cyaw
+        self.cdirect = cdirect
         self.ind_end = len(self.cx) - 1
         self.index_old = None
         self.config = config
@@ -53,9 +56,9 @@ class PATH:
         else:
             self.cv = cv
 
-    def target_index(self, node):
+    def look_ahead_index(self, node):
         if self.index_old is None:
-            self.calc_nearest_ind(node)
+            self.index_old = self.calc_nearest_ind(node)
         config = self.config
         Lf = config.kf * node.v + config.Ld
         for ind in range(self.index_old, self.ind_end + 1):
@@ -69,7 +72,20 @@ class PATH:
         dx = [node.x - x for x in self.cx]
         dy = [node.y - y for y in self.cy]
         ind = np.argmin(np.hypot(dx, dy))
-        self.index_old = ind
+        return ind
 
     def calc_distance(self, node, ind):
         return math.hypot(node.x - self.cx[ind], node.y - self.cy[ind])
+
+    def cal_ed_e_phi(self, node, target_ind):
+        tx = self.cx[target_ind]
+        ty = self.cy[target_ind]
+        tyaw = self.cyaw[target_ind]
+
+        traget_normal_vec = np.array(
+            [math.cos(tyaw - math.pi / 2.0), math.sin(tyaw - math.pi / 2.0)]
+        )
+        node_to_traget_vec = np.array([node.x - tx, node.y - ty])
+        ed = np.dot(node_to_traget_vec, traget_normal_vec)
+        e_phi = pi_2_pi(tyaw - node.yaw)
+        return ed, e_phi

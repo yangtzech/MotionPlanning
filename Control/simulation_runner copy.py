@@ -4,7 +4,7 @@ import sys
 
 import matplotlib.pyplot as plt
 from pid_speed_control import PIDSpeedController
-from Pure_Pursuit import PurePursuitController
+from Stanley import StanleyController
 from utils import pi_2_pi
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
@@ -31,7 +31,7 @@ def run_simulation(config: Config, states):
         states, config.MAX_STEER, config.WB
     )
 
-    lat_controller = PurePursuitController(config)
+    lat_controller = StanleyController(config)
     lon_controller = PIDSpeedController(config)
 
     # 合并所有段的分析数据
@@ -67,6 +67,7 @@ def run_simulation(config: Config, states):
         while t <= maxTime:
             lat_output = lat_controller.ComputeControlCommand(node, ref_trajectory)
             delta = lat_output.steer
+            print(delta)
             target_ind = lat_output.target_ind
             if target_ind >= lastIndex:
                 break

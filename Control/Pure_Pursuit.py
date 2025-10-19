@@ -17,11 +17,12 @@ class PurePursuitController(ControllerBase):
 
     def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
         ref_path = reference
-        ind, Lf = ref_path.target_index(node)
+        ind, Lf = ref_path.look_ahead_index(node)
         tx = ref_path.cx[ind]
         ty = ref_path.cy[ind]
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
         delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
         return ControlCommand(
             steer=delta,
+            target_ind=ind,
         )
