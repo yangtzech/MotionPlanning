@@ -43,21 +43,15 @@ class PurePursuitController(ControllerBase):
         :param reference: reference path: x, y, yaw, curvature
         :return: optimal ControlCommand {'acceleration':..., 'steer':..., 'target_ind':...}
         """
-
-        self.set_reference(reference["cx"], reference["cy"])
-        self.target_ind, _ = self.ref_path.target_index(node)
+        ref_path = PATH(reference["cx"], reference["cy"])
 
         # 纯跟踪控制
-        ind, Lf = self.ref_path.target_index(node)  # target point and pursuit distance
-        ind = max(ind, self.target_ind)
-
-        tx = self.ref_path.cx[ind]
-        ty = self.ref_path.cy[ind]
+        ind, Lf = ref_path.target_index(node)  # target point and pursuit distance
+        tx = ref_path.cx[ind]
+        ty = ref_path.cy[ind]
 
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
         delta = math.atan2(2.0 * config.WB * math.sin(alpha), Lf)
-
-        self.target_ind = ind
 
         return {
             "steer": delta,
