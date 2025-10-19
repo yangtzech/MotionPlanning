@@ -2,6 +2,8 @@ import math
 
 import numpy as np
 
+PI = math.pi
+
 
 def calc_curvature_point(s1, s2, s3):
     ta = math.hypot(s2[0] - s1[0], s2[1] - s1[1])
@@ -42,6 +44,16 @@ def calc_curvature(x, y):
     K.append(0.0)
 
     return K
+
+
+def pi_2_pi(theta):
+    while theta > PI:
+        theta -= 2.0 * PI
+
+    while theta < -PI:
+        theta += 2.0 * PI
+
+    return theta
 
 
 def main():

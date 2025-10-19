@@ -5,6 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 from pid_speed_control import PIDSpeedController
 from Pure_Pursuit import PurePursuitController
+from utils import pi_2_pi
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
@@ -13,7 +14,6 @@ from path_structs import PATH, Node, Nodes
 from path_tools import generate_path
 
 import Control.draw as draw
-import CurvesGenerator.reeds_shepp as rs
 
 is_paused = False
 
@@ -88,7 +88,7 @@ def run_simulation(config: Config, states):
 
             v_safe = max(abs(node.v), 1e-3)
             dy = (node.yaw - yaw_old) / (v_safe * config.dt)
-            steer = rs.pi_2_pi(-math.atan(config.WB * dy))
+            steer = pi_2_pi(-math.atan(config.WB * dy))
 
             yaw_old = node.yaw
 
@@ -100,7 +100,7 @@ def run_simulation(config: Config, states):
             dy_lat = node.y - cy[target_ind]
             lat_error.append(math.hypot(dx, dy_lat))
             # 航向误差
-            yaw_e = rs.pi_2_pi(node.yaw - cyaw[target_ind])
+            yaw_e = pi_2_pi(node.yaw - cyaw[target_ind])
             yaw_error.append(yaw_e)
             time_list.append(t)
 
