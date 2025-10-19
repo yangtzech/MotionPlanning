@@ -1,5 +1,4 @@
 import math
-from typing import Any, Dict
 
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
