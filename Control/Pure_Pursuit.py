@@ -9,10 +9,11 @@ import sys
 from typing import Any, Dict
 
 import matplotlib.pyplot as plt
-from controller_base import ControllerBase
+from controller_base import ControlCommand, ControllerBase
 from pid_speed_control import PIDSpeedController
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
+
 from config_control import Config
 from path_structs import PATH, Node, Nodes
 from path_tools import generate_path
@@ -26,16 +27,16 @@ class PurePursuitController(ControllerBase):
         super().__init__(config)
         self.config = config
 
-    def ComputeControlCommand(self, node: Node, reference: PATH) -> Dict[str, Any]:
+    def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
         ref_path = reference
         ind, Lf = ref_path.target_index(node)
         tx = ref_path.cx[ind]
         ty = ref_path.cy[ind]
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
         delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
-        return {
-            "steer": delta,
-        }
+        return ControlCommand(
+            steer=delta,
+        )
 
 
 def run_simulation(config: Config, states):
@@ -64,10 +65,10 @@ def run_simulation(config: Config, states):
             target_ind, _ = ref_trajectory.target_index(node)
 
             lat_output = lat_controller.ComputeControlCommand(node, ref_trajectory)
-            delta = lat_output["steer"]
+            delta = lat_output.steer
 
             lon_out = lon_controller.ComputeControlCommand(node, ref_trajectory)
-            acceleration = lon_out["acceleration"]
+            acceleration = lon_out.acceleration
 
             t += config.dt
 

@@ -2,7 +2,7 @@ import math
 from typing import Any, Dict
 
 from config_control import Config
-from controller_base import ControllerBase
+from controller_base import ControlCommand, ControllerBase
 from path_structs import PATH, Node
 
 
@@ -11,7 +11,7 @@ class PIDSpeedController(ControllerBase):
         super().__init__(config)
         self.config = config
 
-    def ComputeControlCommand(self, node: Node, reference: PATH) -> Dict[str, Any]:
+    def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
         # 速度控制逻辑，可根据路径或目标点调整
         target_ind, _ = reference.target_index(node)
         target_v = reference.cv[target_ind]
@@ -28,4 +28,6 @@ class PIDSpeedController(ControllerBase):
                 a = -2.5
             elif node.v < -2.0:
                 a = -1.0
-        return {"acceleration": a}
+        return ControlCommand(
+            acceleration=a,
+        )
