@@ -3,18 +3,56 @@ LQR and PID Controller
 author: huiming zhou
 """
 
+import math
 import os
 import sys
-import math
 from enum import Enum
-import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
 import Control.draw_lqr as draw
-from Control.config_control import *
 import CurvesGenerator.reeds_shepp as rs
+from Control.config_control import *
+
+# class C:
+#     # PID config
+#     Kp = 1.0
+#
+#     # System config
+#     dt = 0.1
+#     dist_stop = 0.5
+#     Q = np.eye(4)
+#     R = np.eye(1)
+#
+#     # vehicle config
+#     RF = 3.3  # [m] distance from rear to vehicle front end of vehicle
+#     RB = 0.8  # [m] distance from rear to vehicle back end of vehicle
+#     W = 2.4  # [m] width of vehicle
+#     WD = 0.7 * W  # [m] distance between left-right wheels
+#     WB = 2.5  # [m] Wheel base
+#     TR = 0.44  # [m] Tyre radius
+#     TW = 0.7  # [m] Tyre width
+#     MAX_STEER = 0.30
+
+
+# Controller Config
+ts = 0.1  # [s]
+l_f = 1.165  # [m]
+l_r = 1.165  # [m]
+max_iteration = 150
+eps = 0.01
+
+matrix_q = [0.5, 0.0, 1.0, 0.0]
+matrix_r = [1.0]
+
+state_size = 4
+
+max_acceleration = 5.0  # [m / s^2]
+max_steer_angle = np.deg2rad(40)  # [rad]
+max_speed = 35 / 3.6  # [m / s]
 
 
 class Gear(Enum):
@@ -23,8 +61,7 @@ class Gear(Enum):
 
 
 class VehicleState:
-    def __init__(self, x=0.0, y=0.0, yaw=0.0,
-                 v=0.0, gear=Gear.GEAR_DRIVE):
+    def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0, gear=Gear.GEAR_DRIVE):
         self.x = x
         self.y = y
         self.yaw = yaw
@@ -35,8 +72,7 @@ class VehicleState:
         self.gear = gear
         self.steer = 0.0
 
-    def UpdateVehicleState(self, delta, a, e_cg, theta_e,
-                           gear=Gear.GEAR_DRIVE):
+    def UpdateVehicleState(self, delta, a, e_cg, theta_e, gear=Gear.GEAR_DRIVE):
         """
         update states of vehicle
         :param theta_e: yaw error to ref trajectory
@@ -46,11 +82,11 @@ class VehicleState:
         :param gear: gear mode [GEAR_DRIVE / GEAR/REVERSE]
         """
 
-        wheelbase_ = wheelbase
+        wheelbase_ = l_r + l_f
         delta, a = self.RegulateInput(delta, a)
 
-        self.steer = delta
         self.gear = gear
+        self.steer = delta
         self.x += self.v * math.cos(self.yaw) * ts
         self.y += self.v * math.sin(self.yaw) * ts
         self.yaw += self.v / wheelbase_ * math.tan(delta) * ts
@@ -131,18 +167,18 @@ class TrajectoryAnalyzer:
         yaw = vehicle_state.yaw
 
         # calc nearest point in ref path
-        dx = [x_cg - ix for ix in self.x_[self.ind_old: self.ind_end]]
-        dy = [y_cg - iy for iy in self.y_[self.ind_old: self.ind_end]]
+        dx = [x_cg - ix for ix in self.x_[self.ind_old : self.ind_end]]
+        dy = [y_cg - iy for iy in self.y_[self.ind_old : self.ind_end]]
 
         ind_add = int(np.argmin(np.hypot(dx, dy)))
         dist = math.hypot(dx[ind_add], dy[ind_add])
 
         # calc lateral relative position of vehicle to ref path
-        vec_axle_rot_90 = np.array([[math.cos(yaw + math.pi / 2.0)],
-                                    [math.sin(yaw + math.pi / 2.0)]])
+        vec_axle_rot_90 = np.array(
+            [[math.cos(yaw + math.pi / 2.0)], [math.sin(yaw + math.pi / 2.0)]]
+        )
 
-        vec_path_2_cg = np.array([[dx[ind_add]],
-                                  [dy[ind_add]]])
+        vec_path_2_cg = np.array([[dx[ind_add]], [dy[ind_add]]])
 
         if np.dot(vec_axle_rot_90.T, vec_path_2_cg) > 0.0:
             e_cg = 1.0 * dist  # vehicle on the right of ref path
@@ -177,61 +213,42 @@ class LatController:
         e_cg_old = vehicle_state.e_cg
         theta_e_old = vehicle_state.theta_e
 
-        theta_e, e_cg, yaw_ref, k_ref = \
-            ref_trajectory.ToTrajectoryFrame(vehicle_state)
+        theta_e, e_cg, yaw_ref, k_ref = ref_trajectory.ToTrajectoryFrame(vehicle_state)
 
-        # Calc linearized time-discrete system model
         matrix_ad_, matrix_bd_ = self.UpdateMatrix(vehicle_state)
 
         matrix_state_ = np.zeros((state_size, 1))
         matrix_r_ = np.diag(matrix_r)
         matrix_q_ = np.diag(matrix_q)
 
-        # Solve Ricatti equations using value iteration
-        matrix_k_ = self.SolveLQRProblem(matrix_ad_, matrix_bd_, matrix_q_,
-                                         matrix_r_, eps, max_iteration)
+        matrix_k_ = self.SolveLQRProblem(
+            matrix_ad_, matrix_bd_, matrix_q_, matrix_r_, eps, max_iteration
+        )
 
-        # state vector: 4x1
         matrix_state_[0][0] = e_cg
         matrix_state_[1][0] = (e_cg - e_cg_old) / ts_
         matrix_state_[2][0] = theta_e
         matrix_state_[3][0] = (theta_e - theta_e_old) / ts_
 
-        # feedback steering angle
         steer_angle_feedback = -(matrix_k_ @ matrix_state_)[0][0]
 
-        # calc feedforward term to decrease steady error
-        steer_angle_feedforward = self.ComputeFeedForward(vehicle_state, k_ref, matrix_k_)
+        steer_angle_feedforward = self.ComputeFeedForward(k_ref)
 
         steer_angle = steer_angle_feedback + steer_angle_feedforward
 
         return steer_angle, theta_e, e_cg
 
     @staticmethod
-    def ComputeFeedForward(vehicle_state, ref_curvature, matrix_k_):
+    def ComputeFeedForward(ref_curvature):
         """
         calc feedforward control term to decrease the steady error.
-        :param vehicle_state: vehicle state
         :param ref_curvature: curvature of the target point in ref trajectory
-        :param matrix_k_: feedback matrix K
         :return: feedforward term
         """
 
-        mass_ = m_f + m_r
         wheelbase_ = l_f + l_r
 
-        kv = l_r * mass_ / 2.0 / c_f / wheelbase_ - \
-             l_f * mass_ / 2.0 / c_r / wheelbase_
-
-        v = vehicle_state.v
-
-        if vehicle_state.gear == Gear.GEAR_REVERSE:
-            steer_angle_feedforward = wheelbase_ * ref_curvature
-        else:
-            steer_angle_feedforward = wheelbase_ * ref_curvature + kv * v * v * ref_curvature - \
-                                      matrix_k_[0][2] * \
-                                      (l_r * ref_curvature -
-                                       l_f * mass_ * v * v * ref_curvature / 2.0 / c_r / wheelbase_)
+        steer_angle_feedforward = wheelbase_ * ref_curvature
 
         return steer_angle_feedforward
 
@@ -248,13 +265,14 @@ class LatController:
         :return: feedback matrix K
         """
 
-        assert np.size(A, 0) == np.size(A, 1) and \
-               np.size(B, 0) == np.size(A, 0) and \
-               np.size(Q, 0) == np.size(Q, 1) and \
-               np.size(Q, 0) == np.size(A, 1) and \
-               np.size(R, 0) == np.size(R, 1) and \
-               np.size(R, 0) == np.size(B, 1), \
-            "LQR solver: one or more matrices have incompatible dimensions."
+        assert (
+            np.size(A, 0) == np.size(A, 1)
+            and np.size(B, 0) == np.size(A, 0)
+            and np.size(Q, 0) == np.size(Q, 1)
+            and np.size(Q, 0) == np.size(A, 1)
+            and np.size(R, 0) == np.size(R, 1)
+            and np.size(R, 0) == np.size(B, 1)
+        ), "LQR solver: one or more matrices have incompatible dimensions."
 
         M = np.zeros((np.size(Q, 0), np.size(R, 1)))
 
@@ -268,16 +286,22 @@ class LatController:
 
         while num_iteration < max_num_iteration and diff > tolerance:
             num_iteration += 1
-            P_next = AT @ P @ A - (AT @ P @ B + M) @ \
-                     np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT) + Q
+            P_next = (
+                AT @ P @ A
+                - (AT @ P @ B + M) @ np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT)
+                + Q
+            )
 
             # check the difference between P and P_next
             diff = (abs(P_next - P)).max()
             P = P_next
 
         if num_iteration >= max_num_iteration:
-            print("LQR solver cannot converge to a solution",
-                  "last consecutive result diff is: ", diff)
+            print(
+                "LQR solver cannot converge to a solution",
+                "last consecutive result diff is: ",
+                diff,
+            )
 
         K = np.linalg.inv(BT @ P @ B + R) @ (BT @ P @ A + MT)
 
@@ -291,57 +315,21 @@ class LatController:
         """
 
         ts_ = ts
-        mass_ = m_f + m_r
+        wheelbase_ = l_f + l_r
 
         v = vehicle_state.v
 
-        matrix_a_ = np.zeros((state_size, state_size))  # continuous A matrix
+        matrix_ad_ = np.zeros((state_size, state_size))  # time discrete A matrix
 
-        if vehicle_state.gear == Gear.GEAR_REVERSE:
-            """
-            A matrix (Gear Reverse)
-            [0.0, 0.0, 1.0 * v 0.0;
-             0.0, -(c_f + c_r) / m / v, (c_f + c_r) / m,
-             (l_r * c_r - l_f * c_f) / m / v;
-             0.0, 0.0, 0.0, 1.0;
-             0.0, (lr * cr - lf * cf) / i_z / v, (l_f * c_f - l_r * c_r) / i_z,
-             -1.0 * (l_f^2 * c_f + l_r^2 * c_r) / i_z / v;]
-            """
+        matrix_ad_[0][0] = 1.0
+        matrix_ad_[0][1] = ts_
+        matrix_ad_[1][2] = v
+        matrix_ad_[2][2] = 1.0
+        matrix_ad_[2][3] = ts_
 
-            matrix_a_[0][1] = 0.0
-            matrix_a_[0][2] = 1.0 * v
-        else:
-            """
-            A matrix (Gear Drive)
-            [0.0, 1.0, 0.0, 0.0;
-             0.0, -(c_f + c_r) / m / v, (c_f + c_r) / m,
-             (l_r * c_r - l_f * c_f) / m / v;
-             0.0, 0.0, 0.0, 1.0;
-             0.0, (lr * cr - lf * cf) / i_z / v, (l_f * c_f - l_r * c_r) / i_z,
-             -1.0 * (l_f^2 * c_f + l_r^2 * c_r) / i_z / v;]
-            """
-
-            matrix_a_[0][1] = 1.0
-            matrix_a_[0][2] = 0.0
-
-        matrix_a_[1][1] = -1.0 * ( + c_r) / mass_ / v
-        matrix_a_[1][2] = (c_f + c_r) / mass_
-        matrix_a_[1][3] = (l_r * c_r - l_f * c_f) / mass_ / v
-        matrix_a_[2][3] = 1.0
-        matrix_a_[3][1] = (l_r * c_r - l_f * c_f) / Iz / v
-        matrix_a_[3][2] = (l_f * c_f - l_r * c_r) / Iz
-        matrix_a_[3][3] = -1.0 * (l_f ** 2 * c_f + l_r ** 2 * c_r) / Iz / v
-
-        # Tustin's method (bilinear transform)
-        matrix_i = np.eye(state_size)  # identical matrix
-        matrix_ad_ = np.linalg.pinv(matrix_i - ts_ * 0.5 * matrix_a_) @ \
-                     (matrix_i + ts_ * 0.5 * matrix_a_)  # discrete A matrix
-
-        # b = [0.0, c_f / m, 0.0, l_f * c_f / I_z].T
-        matrix_b_ = np.zeros((state_size, 1))  # continuous b matrix
-        matrix_b_[1][0] = c_f / mass_
-        matrix_b_[3][0] = l_f * c_f / Iz
-        matrix_bd_ = matrix_b_ * ts_  # discrete b matrix
+        # b = [0.0, 0.0, 0.0, v / L].T
+        matrix_bd_ = np.zeros((state_size, 1))  # time discrete b matrix
+        matrix_bd_[3][0] = v / wheelbase_
 
         return matrix_ad_, matrix_bd_
 
@@ -402,7 +390,7 @@ def generate_path(s):
     :param s: objective positions and directions.
     :return: paths
     """
-    wheelbase_ = wheelbase
+    wheelbase_ = l_f + l_r
 
     max_c = math.tan(0.5 * max_steer_angle) / wheelbase_
     path_x, path_y, yaw, direct, rc = [], [], [], [], []
@@ -413,8 +401,7 @@ def generate_path(s):
         s_x, s_y, s_yaw = s[i][0], s[i][1], np.deg2rad(s[i][2])
         g_x, g_y, g_yaw = s[i + 1][0], s[i + 1][1], np.deg2rad(s[i + 1][2])
 
-        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw,
-                                      g_x, g_y, g_yaw, max_c)
+        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw, g_x, g_y, g_yaw, max_c)
 
         irc, rds = rs.calc_curvature(path_i.x, path_i.y, path_i.yaw, path_i.directions)
 
@@ -440,8 +427,13 @@ def generate_path(s):
                 yaw.append(yaw_rec)
                 direct.append(direct_rec)
                 rc.append(rc_rec)
-                x_rec, y_rec, yaw_rec, direct_rec, rc_rec = \
-                    [x_rec[-1]], [y_rec[-1]], [yaw_rec[-1]], [-direct_rec[-1]], [rc_rec[-1]]
+                x_rec, y_rec, yaw_rec, direct_rec, rc_rec = (
+                    [x_rec[-1]],
+                    [y_rec[-1]],
+                    [yaw_rec[-1]],
+                    [-direct_rec[-1]],
+                    [rc_rec[-1]],
+                )
 
     path_x.append(x_rec)
     path_y.append(y_rec)
@@ -459,18 +451,26 @@ def generate_path(s):
 
 def main():
     # generate path
-    states = [(0, 0, 0), (20, 15, 0), (35, 20, 90), (40, 0, 180),
-              (20, 0, 120), (5, -10, 180), (15, 5, 30)]
+    states = [
+        (0, 0, 0),
+        (20, 15, 0),
+        (35, 20, 90),
+        (40, 0, 180),
+        (20, 0, 120),
+        (5, -10, 180),
+        (15, 5, 30),
+    ]
     #
     # states = [(-3, 3, 120), (10, -7, 30), (10, 13, 30), (20, 5, -25),
     #           (35, 10, 180), (30, -10, 160), (5, -12, 90)]
 
     x_ref, y_ref, yaw_ref, direct, curv, x_all, y_all = generate_path(states)
 
+    wheelbase_ = l_f + l_r
+
     maxTime = 100.0
     yaw_old = 0.0
-    x0, y0, yaw0, direct0 = \
-        x_ref[0][0], y_ref[0][0], yaw_ref[0][0], direct[0][0]
+    x0, y0, yaw0, direct0 = x_ref[0][0], y_ref[0][0], yaw_ref[0][0], direct[0][0]
 
     x_rec, y_rec, yaw_rec, direct_rec = [], [], [], []
 
@@ -498,12 +498,15 @@ def main():
             else:
                 target_speed = 15.0 / 3.6
 
-            delta_opt, theta_e, e_cg = \
-                lat_controller.ComputeControlCommand(vehicle_state, ref_trajectory)
+            delta_opt, theta_e, e_cg = lat_controller.ComputeControlCommand(
+                vehicle_state, ref_trajectory
+            )
 
-            a_opt = lon_controller.ComputeControlCommand(target_speed, vehicle_state, dist)
+            a_opt = lon_controller.ComputeControlCommand(
+                target_speed, vehicle_state, dist
+            )
 
-            vehicle_state.UpdateVehicleState(pi_2_pi(delta_opt), a_opt, e_cg, theta_e, direct)
+            vehicle_state.UpdateVehicleState(delta_opt, a_opt, e_cg, theta_e, direct)
 
             t += ts
 
@@ -514,23 +517,29 @@ def main():
             y_rec.append(vehicle_state.y)
             yaw_rec.append(vehicle_state.yaw)
 
+            dy = (vehicle_state.yaw - yaw_old) / (vehicle_state.v * ts)
+            # steer = rs.pi_2_pi(-math.atan(wheelbase_ * dy))
+
+            yaw_old = vehicle_state.yaw
             x0 = x_rec[-1]
             y0 = y_rec[-1]
             yaw0 = yaw_rec[-1]
 
             plt.cla()
-            plt.plot(x_all, y_all, color='gray', linewidth=2.0)
-            plt.plot(x_rec, y_rec, linewidth=2.0, color='darkviolet')
+            plt.plot(x_all, y_all, color="gray", linewidth=2.0)
+            plt.plot(x_rec, y_rec, linewidth=2.0, color="darkviolet")
+            # plt.plot(x[ind], y[ind], '.r')
             draw.draw_car(x0, y0, yaw0, -vehicle_state.steer)
             plt.axis("equal")
-            plt.title("LQR (Dynamics): v=" + str(vehicle_state.v * 3.6)[:4] + "km/h")
-            plt.gcf().canvas.mpl_connect('key_release_event',
-                                         lambda event:
-                                         [exit(0) if event.key == 'escape' else None])
+            plt.title("LQR (Kinematic): v=" + str(vehicle_state.v * 3.6)[:4] + "km/h")
+            plt.gcf().canvas.mpl_connect(
+                "key_release_event",
+                lambda event: [exit(0) if event.key == "escape" else None],
+            )
             plt.pause(0.001)
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -3,18 +3,18 @@ Front-Wheel Feedback Controller (Stanley)
 author: huiming zhou
 """
 
+import math
 import os
 import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
 import Control.draw as draw
-import CurvesGenerator.reeds_shepp as rs
 import CurvesGenerator.cubic_spline as cs
+import CurvesGenerator.reeds_shepp as rs
 
 
 class C:
@@ -89,11 +89,11 @@ class Trajectory:
         target_index = max(self.ind_old, target_index)
         self.ind_old = max(self.ind_old, target_index)
 
-        front_axle_vec_rot_90 = np.array([[math.cos(node.yaw - math.pi / 2.0)],
-                                          [math.sin(node.yaw - math.pi / 2.0)]])
+        front_axle_vec_rot_90 = np.array(
+            [[math.cos(node.yaw - math.pi / 2.0)], [math.sin(node.yaw - math.pi / 2.0)]]
+        )
 
-        vec_target_2_front = np.array([[dx[target_index]],
-                                       [dy[target_index]]])
+        vec_target_2_front = np.array([[dx[target_index]], [dy[target_index]]])
 
         ef = np.dot(vec_target_2_front.T, front_axle_vec_rot_90)
 
@@ -186,19 +186,20 @@ def main():
         yawrec.append(node.yaw)
 
         plt.cla()
-        plt.plot(cx, cy, color='gray', linewidth=2.0)
-        plt.plot(xrec, yrec, linewidth=2.0, color='darkviolet')
-        plt.plot(cx[target_index], cy[target_index], '.r')
+        plt.plot(cx, cy, color="gray", linewidth=2.0)
+        plt.plot(xrec, yrec, linewidth=2.0, color="darkviolet")
+        plt.plot(cx[target_index], cy[target_index], ".r")
         draw.draw_car(node.x, node.y, node.yaw, steer, C)
         plt.axis("equal")
         plt.title("FrontWheelFeedback: v=" + str(node.v * 3.6)[:4] + "km/h")
-        plt.gcf().canvas.mpl_connect('key_release_event',
-                                     lambda event:
-                                     [exit(0) if event.key == 'escape' else None])
+        plt.gcf().canvas.mpl_connect(
+            "key_release_event",
+            lambda event: [exit(0) if event.key == "escape" else None],
+        )
         plt.pause(0.001)
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

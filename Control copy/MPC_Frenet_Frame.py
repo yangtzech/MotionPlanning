@@ -3,19 +3,19 @@ Linear MPC controller (Frenet frame)
 author: huiming zhou
 """
 
+import math
 import os
 import sys
-import math
-import cvxpy
-import numpy as np
-import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+import cvxpy
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
 import Control.draw as draw
-import CurvesGenerator.reeds_shepp as rs
 import CurvesGenerator.cubic_spline as cs
+import CurvesGenerator.reeds_shepp as rs
 
 
 class P:
@@ -104,19 +104,19 @@ class PATH:
         self.ind_old = 0
 
     def calc_theta_e_and_er(self, node):
-        dx = [node.x - x for x in self.cx[self.ind_old: (self.ind_old + P.N_IND)]]
-        dy = [node.y - y for y in self.cy[self.ind_old: (self.ind_old + P.N_IND)]]
+        dx = [node.x - x for x in self.cx[self.ind_old : (self.ind_old + P.N_IND)]]
+        dy = [node.y - y for y in self.cy[self.ind_old : (self.ind_old + P.N_IND)]]
         dist = np.hypot(dx, dy)
 
         ind_in_N = int(np.argmin(dist))
         ind = self.ind_old + ind_in_N
         self.ind_old = ind
 
-        rear_axle_vec_rot_90 = np.array([[math.cos(node.yaw + math.pi / 2.0)],
-                                         [math.sin(node.yaw + math.pi / 2.0)]])
+        rear_axle_vec_rot_90 = np.array(
+            [[math.cos(node.yaw + math.pi / 2.0)], [math.sin(node.yaw + math.pi / 2.0)]]
+        )
 
-        vec_target_2_rear = np.array([[dx[ind_in_N]],
-                                      [dy[ind_in_N]]])
+        vec_target_2_rear = np.array([[dx[ind_in_N]], [dy[ind_in_N]]])
 
         er = np.dot(vec_target_2_rear.T, rear_axle_vec_rot_90)
         er = er[0][0]
@@ -183,7 +183,9 @@ def solve_linear_mpc(z_ref, v_bar, z0):
 
         if t < P.T - 1:
             cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], P.Rd)
-            constrains += [cvxpy.abs(u[1, t + 1] - u[1, t]) <= P.steer_change_max * P.dt]
+            constrains += [
+                cvxpy.abs(u[1, t + 1] - u[1, t]) <= P.steer_change_max * P.dt
+            ]
 
     cost += cvxpy.quad_form(z_ref[:, P.T] - z[:, P.T], P.Qf)
 
@@ -198,8 +200,7 @@ def solve_linear_mpc(z_ref, v_bar, z0):
 
     a, delta = None, None
 
-    if prob.status == cvxpy.OPTIMAL or \
-            prob.status == cvxpy.OPTIMAL_INACCURATE:
+    if prob.status == cvxpy.OPTIMAL or prob.status == cvxpy.OPTIMAL_INACCURATE:
         a = u.value[0, :]
         delta = u.value[1, :]
     else:
@@ -222,17 +223,17 @@ def predict_states_in_T_step(node0, a, delta):
 
 
 def calc_linear_discrete_model(v):
-    A = np.array([[1.0, P.dt, 0.0, 0.0, 0.0],
-                  [0.0, 0.0, v, 0.0, 0.0],
-                  [0.0, 0.0, 1.0, P.dt, 0.0],
-                  [0.0, 0.0, 0.0, 0.0, 0.0],
-                  [0.0, 0.0, 0.0, 0.0, 1.0]])
+    A = np.array(
+        [
+            [1.0, P.dt, 0.0, 0.0, 0.0],
+            [0.0, 0.0, v, 0.0, 0.0],
+            [0.0, 0.0, 1.0, P.dt, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
-    B = np.array([[0.0, 0.0],
-                  [0.0, 0.0],
-                  [0.0, 0.0],
-                  [v / P.WB, 0.0],
-                  [0.0, P.dt]])
+    B = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [v / P.WB, 0.0], [0.0, P.dt]])
 
     return A, B
 
@@ -256,7 +257,7 @@ def calc_speed_profile(cx, cy, cyaw, target_speed):
                 direction = 1.0
 
         if direction != 1.0:
-            speed_profile[i] = - target_speed
+            speed_profile[i] = -target_speed
         else:
             speed_profile[i] = target_speed
 
@@ -279,8 +280,7 @@ def main():
     ax = [0.0, 20.0, 40.0, 55.0, 70.0, 85.0]
     ay = [0.0, 50.0, 20.0, 35.0, 0.0, 10.0]
 
-    cx, cy, cyaw, ck, s = \
-        cs.calc_spline_course(ax, ay, ds=P.d_dist)
+    cx, cy, cyaw, ck, s = cs.calc_spline_course(ax, ay, ds=P.d_dist)
 
     sp = calc_speed_profile(cx, cy, cyaw, P.target_speed)
 
@@ -300,14 +300,14 @@ def main():
     a_exc, delta_exc = 0.0, 0.0
 
     while time < P.time_max:
-        z_ref, target_ind, theta_e, er = \
-            calc_ref_trajectory_in_T_step(node, ref_path, sp)
+        z_ref, target_ind, theta_e, er = calc_ref_trajectory_in_T_step(
+            node, ref_path, sp
+        )
 
         node0 = Node(x=node.x, y=node.y, yaw=node.yaw, v=node.v)
         z0 = [er, 0.0, theta_e, 0.0, node.v]
 
-        a_opt, delta_opt = \
-            linear_mpc_control(z_ref, node0, z0, a_opt, delta_opt)
+        a_opt, delta_opt = linear_mpc_control(z_ref, node0, z0, a_opt, delta_opt)
 
         # node_opt = Node(x=node.x, y=node.y, yaw=node.yaw, v=node.v)
         # x_opt, y_opt = [node_opt.x], [node_opt.y]
@@ -333,22 +333,22 @@ def main():
 
         dist = math.hypot(node.x - cx[-1], node.y - cy[-1])
 
-        if dist < P.dist_stop and \
-                abs(node.v) < P.speed_stop:
+        if dist < P.dist_stop and abs(node.v) < P.speed_stop:
             break
 
         plt.cla()
-        plt.gcf().canvas.mpl_connect('key_release_event',
-                                     lambda event:
-                                     [exit(0) if event.key == 'escape' else None])
+        plt.gcf().canvas.mpl_connect(
+            "key_release_event",
+            lambda event: [exit(0) if event.key == "escape" else None],
+        )
 
         # if x_opt is not None:
         #     plt.plot(x_opt, y_opt, 'xr')
 
-        plt.plot(cx, cy, '-r')
-        plt.plot(x, y, '-b')
-        plt.plot(z_ref[0, :], z_ref[1, :], 'xk')
-        plt.plot(cx[target_ind], cy[target_ind], 'xg')
+        plt.plot(cx, cy, "-r")
+        plt.plot(x, y, "-b")
+        plt.plot(z_ref[0, :], z_ref[1, :], "xk")
+        plt.plot(cx[target_ind], cy[target_ind], "xg")
         plt.axis("equal")
         plt.title("Linear MPC, " + "v = " + str(round(node.v * 3.6, 2)))
         plt.pause(0.001)
@@ -356,5 +356,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

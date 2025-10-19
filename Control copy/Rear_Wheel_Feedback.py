@@ -3,14 +3,14 @@ Rear-Wheel Feedback Controller
 author: huiming zhou
 """
 
+import math
 import os
 import sys
-import math
-import numpy as np
-import matplotlib.pyplot as plt
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+import matplotlib.pyplot as plt
+import numpy as np
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
 import Control.draw as draw
 import CurvesGenerator.reeds_shepp as rs
@@ -77,11 +77,11 @@ class PATH:
         k = self.ccurv[ind]
         yaw = self.cyaw[ind]
 
-        rear_axle_vec_rot_90 = np.array([[math.cos(node.yaw + math.pi / 2.0)],
-                                         [math.sin(node.yaw + math.pi / 2.0)]])
+        rear_axle_vec_rot_90 = np.array(
+            [[math.cos(node.yaw + math.pi / 2.0)], [math.sin(node.yaw + math.pi / 2.0)]]
+        )
 
-        vec_target_2_rear = np.array([[node.x - self.cx[ind]],
-                                      [node.y - self.cy[ind]]])
+        vec_target_2_rear = np.array([[node.x - self.cx[ind]], [node.y - self.cy[ind]]])
 
         er = np.dot(vec_target_2_rear.T, rear_axle_vec_rot_90)
         theta_e = pi_2_pi(node.yaw - self.cyaw[ind])
@@ -98,7 +98,7 @@ class PATH:
         dx = [node.x - x for x in self.cx]
         dy = [node.y - y for y in self.cy]
         dist = np.hypot(dx, dy)
-        self.s0 += np.argmin(dist[self.s0:self.len])
+        self.s0 += np.argmin(dist[self.s0 : self.len])
 
         return self.s0
 
@@ -114,8 +114,11 @@ def rear_wheel_feedback_control(node, ref_path):
     theta_e, er, k, yaw, ind = ref_path.calc_theta_e_and_er(node)
     vr = node.v
 
-    omega = vr * k * math.cos(theta_e) / (1.0 - k * er) - \
-            C.K_theta * abs(vr) * theta_e - C.K_e * vr * math.sin(theta_e) * er / theta_e
+    omega = (
+        vr * k * math.cos(theta_e) / (1.0 - k * er)
+        - C.K_theta * abs(vr) * theta_e
+        - C.K_e * vr * math.sin(theta_e) * er / theta_e
+    )
 
     delta = math.atan2(C.WB * omega, vr)
 
@@ -169,8 +172,7 @@ def generate_path(s):
         s_x, s_y, s_yaw = s[i][0], s[i][1], np.deg2rad(s[i][2])
         g_x, g_y, g_yaw = s[i + 1][0], s[i + 1][1], np.deg2rad(s[i + 1][2])
 
-        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw,
-                                      g_x, g_y, g_yaw, max_c)
+        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw, g_x, g_y, g_yaw, max_c)
 
         irc, rds = rs.calc_curvature(path_i.x, path_i.y, path_i.yaw, path_i.directions)
 
@@ -196,8 +198,13 @@ def generate_path(s):
                 yaw.append(yaw_rec)
                 direct.append(direct_rec)
                 rc.append(rc_rec)
-                x_rec, y_rec, yaw_rec, direct_rec, rc_rec = \
-                    [x_rec[-1]], [y_rec[-1]], [yaw_rec[-1]], [-direct_rec[-1]], [rc_rec[-1]]
+                x_rec, y_rec, yaw_rec, direct_rec, rc_rec = (
+                    [x_rec[-1]],
+                    [y_rec[-1]],
+                    [yaw_rec[-1]],
+                    [-direct_rec[-1]],
+                    [rc_rec[-1]],
+                )
 
     path_x.append(x_rec)
     path_y.append(y_rec)
@@ -215,8 +222,15 @@ def generate_path(s):
 
 def main():
     # generate path
-    states = [(0, 0, 0), (20, 15, 0), (35, 20, 90), (40, 0, 180),
-              (20, 0, 120), (5, -10, 180), (15, 5, 30)]
+    states = [
+        (0, 0, 0),
+        (20, 15, 0),
+        (35, 20, 90),
+        (40, 0, 180),
+        (20, 0, 120),
+        (5, -10, 180),
+        (15, 5, 30),
+    ]
     #
     # states = [(-3, 3, 120), (10, -7, 30), (10, 13, 30), (20, 5, -25),
     #           (35, 10, 180), (30, -10, 160), (5, -12, 90)]
@@ -225,8 +239,7 @@ def main():
 
     maxTime = 100.0
     yaw_old = 0.0
-    x0, y0, yaw0, direct0 = \
-        x_ref[0][0], y_ref[0][0], yaw_ref[0][0], direct[0][0]
+    x0, y0, yaw0, direct0 = x_ref[0][0], y_ref[0][0], yaw_ref[0][0], direct[0][0]
 
     x_rec, y_rec, yaw_rec, direct_rec = [], [], [], []
 
@@ -268,19 +281,20 @@ def main():
             yaw0 = yaw_rec[-1]
 
             plt.cla()
-            plt.plot(x_all, y_all, color='gray', linewidth=2.0)
-            plt.plot(x_rec, y_rec, linewidth=2.0, color='darkviolet')
-            plt.plot(cx[ind], cy[ind], '.r')
+            plt.plot(x_all, y_all, color="gray", linewidth=2.0)
+            plt.plot(x_rec, y_rec, linewidth=2.0, color="darkviolet")
+            plt.plot(cx[ind], cy[ind], ".r")
             draw.draw_car(node.x, node.y, node.yaw, steer, C)
             plt.axis("equal")
             plt.title("RearWheelFeedback: v=" + str(node.v * 3.6)[:4] + "km/h")
-            plt.gcf().canvas.mpl_connect('key_release_event',
-                                         lambda event:
-                                         [exit(0) if event.key == 'escape' else None])
+            plt.gcf().canvas.mpl_connect(
+                "key_release_event",
+                lambda event: [exit(0) if event.key == "escape" else None],
+            )
             plt.pause(0.001)
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
