@@ -3,15 +3,15 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
-from pid_speed_control import PIDSpeedController
-from Pure_Pursuit import PurePursuitController
 from utils import pi_2_pi
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
-from config_control import Config
 from path_structs import PATH, Node, Nodes
 from path_tools import generate_path
+from pid_speed_control import PIDSpeedController
+from Pure_Pursuit import PurePursuitController
+from Stanley import StanleyController
 
 import Control.draw as draw
 
@@ -26,13 +26,36 @@ def on_key(event):
         exit(0)
 
 
-def run_simulation(config: Config, states):
+def get_lat_controller(name, config):
+    if name.lower() == "purepursuit":
+        return PurePursuitController(config)
+    elif name.lower() == "stanley":
+        return StanleyController(config)
+    else:
+        raise ValueError(f"Unknown lateral controller: {name}")
+
+
+def get_lon_controller(name, config):
+    if name.lower() == "pid":
+        return PIDSpeedController(config)
+    else:
+        raise ValueError(f"Unknown longitudinal controller: {name}")
+
+
+def run_simulation(
+    config,
+    states,
+    lat_controller,
+    lon_controller,
+    draw_car_func=None,
+    show_animation=True,
+):
     x, y, yaw, direct, path_x, path_y = generate_path(
         states, config.MAX_STEER, config.WB
     )
 
-    lat_controller = PurePursuitController(config)
-    lon_controller = PIDSpeedController(config)
+    lat_controller = get_lat_controller(lat_controller, config)
+    lon_controller = get_lon_controller(lon_controller, config)
 
     # 合并所有段的分析数据
     all_time = []
@@ -182,21 +205,3 @@ def run_simulation(config: Config, states):
     plt.suptitle("All Trajectory Segments Tracking Analysis")
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
-
-
-def main():
-    config = Config()
-    states = [
-        (0, 0, 0),
-        (20, 15, 0),
-        (35, 20, 90),
-        (40, 0, 180),
-        (20, 0, 120),
-        (5, -10, 180),
-        (15, 5, 30),
-    ]
-    run_simulation(config, states)
-
-
-if __name__ == "__main__":
-    main()
