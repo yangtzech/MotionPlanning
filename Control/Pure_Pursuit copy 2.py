@@ -20,42 +20,34 @@ from path_tools import generate_path
 import Control.draw as draw
 import CurvesGenerator.reeds_shepp as rs
 
+# 实例化 config，只在主程序创建一次
 config = Config()
 
 
 # --- 统一接口的PurePursuit控制器类 ---
 class PurePursuitController(ControllerBase):
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: Config):
         super().__init__(config)
-        self.target_ind = None
-        self.ref_path = None
+        self.config = config
 
-    def set_reference(self, cx, cy):
-        self.ref_path = PATH(cx, cy)
-        self.target_ind = None
-
-    def ComputeControlCommand(
-        self, node: Node, reference: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def ComputeControlCommand(self, node: Node, reference: PATH) -> Dict[str, Any]:
         """
         pure pursuit controller
         :param node: current information
         :param reference: reference path: x, y, yaw, curvature
-        :return: optimal ControlCommand {'acceleration':..., 'steer':..., 'target_ind':...}
+        :return: optimal ControlCommand {'steer':..., 'target_ind':...}
         """
-        ref_path = PATH(reference["cx"], reference["cy"])
-
-        # 纯跟踪控制
-        ind, Lf = ref_path.target_index(node)  # target point and pursuit distance
+        ref_path = reference
+        ind, Lf = ref_path.target_index(node)
         tx = ref_path.cx[ind]
         ty = ref_path.cy[ind]
 
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
-        delta = math.atan2(2.0 * config.WB * math.sin(alpha), Lf)
+        delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
 
         return {
             "steer": delta,
-            "target_ind": self.target_ind,
+            "target_ind": ind,
         }
 
 
@@ -70,36 +62,29 @@ def main():
         (15, 5, 30),
     ]
 
-    # states = [(-3, 3, 120), (10, -7, 30), (10, 13, 30), (20, 5, -25),
-    #           (35, 10, 180), (30, -10, 160), (5, -12, 90)]
-
     x, y, yaw, direct, path_x, path_y = generate_path(
         states, config.MAX_STEER, config.WB
     )
 
-    # simulation
     maxTime = 10.0
     yaw_old = 0.0
     x0, y0, yaw0, direct0 = x[0][0], y[0][0], yaw[0][0], direct[0][0]
     x_rec, y_rec = [], []
-    controller = PurePursuitController()
-    speed_controller = PIDSpeedController()
+    controller = PurePursuitController(config)
+    speed_controller = PIDSpeedController(config)
 
     for cx, cy, cyaw, cdirect in zip(x, y, yaw, direct):
         t = 0.0
-        node = Node(x=x0, y=y0, yaw=yaw0, v=0.0, direct=direct0)
+        node = Node(x=x0, y=y0, yaw=yaw0, v=0.0, direct=direct0, config=config)
         nodes = Nodes()
         nodes.add(t, node)
-        ref_trajectory = PATH(cx, cy)
+        ref_trajectory = PATH(cx, cy, config)
         target_ind, _ = ref_trajectory.target_index(node)
         last_ind = len(cx)
 
         while t <= maxTime and target_ind < last_ind:
-
-            reference = {"cx": cx, "cy": cy}
-            # 替换原来的 pid_control 调用为：
-            acceleration = speed_controller.ComputeControlCommand(node, reference)
-            output = controller.ComputeControlCommand(node, reference)
+            acceleration = speed_controller.ComputeControlCommand(node, ref_trajectory)
+            output = controller.ComputeControlCommand(node, ref_trajectory)
             delta = output["steer"]
             target_ind = output["target_ind"]
 
@@ -110,7 +95,8 @@ def main():
             x_rec.append(node.x)
             y_rec.append(node.y)
 
-            dy = (node.yaw - yaw_old) / (node.v * config.dt)
+            v_safe = max(abs(node.v), 1e-3)
+            dy = (node.yaw - yaw_old) / (v_safe * config.dt)
             steer = rs.pi_2_pi(-math.atan(config.WB * dy))
 
             yaw_old = node.yaw
@@ -137,6 +123,5 @@ def main():
     plt.show()
 
 
-# 仅供测试
 if __name__ == "__main__":
     main()

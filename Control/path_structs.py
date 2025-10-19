@@ -1,34 +1,26 @@
 import math
 
 import numpy as np
-from config_control import Config
-
-config = Config()
 
 
 class Node:
-    def __init__(self, x, y, yaw, v, direct):
+    def __init__(self, x, y, yaw, v, direct, config):
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
         self.direct = direct
+        self.config = config
 
     def update(self, a, delta, direct):
+        config = self.config
+        delta = np.clip(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
+
         self.x += self.v * math.cos(self.yaw) * config.dt
         self.y += self.v * math.sin(self.yaw) * config.dt
         self.yaw += self.v / config.WB * math.tan(delta) * config.dt
         self.direct = direct
         self.v += self.direct * a * config.dt
-        delta = self.limit_input(delta, config)
-
-    @staticmethod
-    def limit_input(delta, config):
-        if delta > 1.2 * config.MAX_STEER:
-            return 1.2 * config.MAX_STEER
-        if delta < -1.2 * config.MAX_STEER:
-            return -1.2 * config.MAX_STEER
-        return delta
 
 
 class Nodes:
@@ -50,15 +42,17 @@ class Nodes:
 
 
 class PATH:
-    def __init__(self, cx, cy):
+    def __init__(self, cx, cy, config):
         self.cx = cx
         self.cy = cy
         self.ind_end = len(self.cx) - 1
         self.index_old = None
+        self.config = config
 
     def target_index(self, node):
         if self.index_old is None:
             self.calc_nearest_ind(node)
+        config = self.config
         Lf = config.kf * node.v + config.Ld
         for ind in range(self.index_old, self.ind_end + 1):
             if self.calc_distance(node, ind) > Lf:
