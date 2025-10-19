@@ -1,5 +1,8 @@
 from config_control import Config
+from pid_speed_control import PIDSpeedController
+from Pure_Pursuit import PurePursuitController
 from simulation_common import run_simulation
+from simulation_runner_configurable import plot_tracking_results
 
 
 def main():
@@ -13,7 +16,11 @@ def main():
         (5, -10, 180),
         (15, 5, 30),
     ]
-    run_simulation(config, states, "PurePursuit", "PID")
+    result = run_simulation(
+        config, states, PurePursuitController(config), PIDSpeedController(config)
+    )
+    result["controller"] = "PurePursuit"
+    plot_tracking_results([result])
 
 
 if __name__ == "__main__":

@@ -4,8 +4,12 @@
 """
 
 import math
+import os
+import sys
 
 import numpy as np
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
 import CurvesGenerator.reeds_shepp as rs
 

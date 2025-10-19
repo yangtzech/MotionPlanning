@@ -1,17 +1,9 @@
 import math
-import os
-import sys
 
 import matplotlib.pyplot as plt
-from utils import pi_2_pi
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
-
 from path_structs import PATH, Node, Nodes
 from path_tools import generate_path
-from pid_speed_control import PIDSpeedController
-from Pure_Pursuit import PurePursuitController
-from Stanley import StanleyController
+from utils import pi_2_pi
 
 import Control.draw as draw
 
@@ -26,36 +18,30 @@ def on_key(event):
         exit(0)
 
 
-def get_lat_controller(name, config):
-    if name.lower() == "purepursuit":
-        return PurePursuitController(config)
-    elif name.lower() == "stanley":
-        return StanleyController(config)
-    else:
-        raise ValueError(f"Unknown lateral controller: {name}")
-
-
-def get_lon_controller(name, config):
-    if name.lower() == "pid":
-        return PIDSpeedController(config)
-    else:
-        raise ValueError(f"Unknown longitudinal controller: {name}")
-
-
 def run_simulation(
     config,
     states,
     lat_controller,
     lon_controller,
-    draw_car_func=None,
+    draw_car_func=draw.draw_car,
     show_animation=True,
 ):
+    """
+    Run path tracking simulation.
+    Args:
+        config: Config object
+        states: list of (x, y, yaw) tuples
+        lat_controller: lateral controller instance (必须有 ComputeControlCommand 方法)
+        lon_controller: longitudinal controller instance (必须有 ComputeControlCommand 方法)
+        draw_car_func: function for drawing car (optional)
+        show_animation: whether to show animation
+    Returns:
+        dict with all_time, all_v_actual, all_v_ref, all_lat_error, all_yaw_error
+    """
     x, y, yaw, direct, path_x, path_y = generate_path(
         states, config.MAX_STEER, config.WB
     )
-
-    lat_controller = get_lat_controller(lat_controller, config)
-    lon_controller = get_lon_controller(lon_controller, config)
+    # ...existing code...
 
     # 合并所有段的分析数据
     all_time = []
@@ -65,6 +51,7 @@ def run_simulation(
     all_yaw_error = []
     seg_time_offset = 0.0
 
+    event_bound = False
     for seg_id, (cx, cy, cyaw, cdirect) in enumerate(zip(x, y, yaw, direct)):
         t = 0.0
         maxTime = 10.0
@@ -123,22 +110,22 @@ def run_simulation(
             time_list.append(t)
 
             # animation
-            plt.cla()
-            plt.plot(path_x, path_y, color="gray", linewidth=2)
-            plt.plot(x_rec, y_rec, color="darkviolet", linewidth=2)
-            plt.plot(cx[target_ind], cy[target_ind], ".r")
-            draw.draw_car(node.x, node.y, yaw_old, steer, config)
+            if show_animation:
+                plt.cla()
+                plt.plot(path_x, path_y, color="gray", linewidth=2)
+                plt.plot(x_rec, y_rec, color="darkviolet", linewidth=2)
+                plt.plot(cx[target_ind], cy[target_ind], ".r")
+                draw_car_func(node.x, node.y, yaw_old, steer, config)
 
-            plt.axis("equal")
-            plt.title("PurePursuit: v=" + str(node.v * 3.6)[:4] + "km/h")
-            plt.pause(0.001)
-            plt.gcf().canvas.mpl_connect(
-                "key_release_event",
-                on_key,
-            )
-            if is_paused:
-                while is_paused:
-                    plt.pause(0.1)
+                plt.axis("equal")
+                plt.title("PurePursuit: v=" + str(node.v * 3.6)[:4] + "km/h")
+                if not event_bound:
+                    plt.gcf().canvas.mpl_connect("key_release_event", on_key)
+                    event_bound = True
+                plt.pause(0.001)
+                if is_paused:
+                    while is_paused:
+                        plt.pause(0.1)
 
         # 合并分析数据
         all_time.append([t + seg_time_offset for t in time_list])
@@ -149,59 +136,11 @@ def run_simulation(
         if time_list:
             seg_time_offset += time_list[-1]
 
-    # 所有段结束后统一画分析曲线
-    fig, axs = plt.subplots(3, 1, figsize=(8, 10))
-    colors = [
-        "tab:blue",
-        "tab:orange",
-        "tab:green",
-        "tab:red",
-        "tab:purple",
-        "tab:brown",
-        "tab:pink",
-        "tab:gray",
-    ]
-    for seg_id in range(len(all_time)):
-        c = colors[seg_id % len(colors)]
-        axs[0].plot(
-            all_time[seg_id],
-            all_v_actual[seg_id],
-            label=f"Actual Speed Segment{seg_id+1}",
-            color=c,
-        )
-        axs[0].plot(
-            all_time[seg_id],
-            all_v_ref[seg_id],
-            label=f"Reference Speed Segment{seg_id+1}",
-            color=c,
-            linestyle="--",
-        )
-        axs[1].plot(
-            all_time[seg_id],
-            all_lat_error[seg_id],
-            label=f"Latitude Error Segment{seg_id+1}",
-            color=c,
-        )
-        axs[2].plot(
-            all_time[seg_id],
-            all_yaw_error[seg_id],
-            label=f"Heading Error Segment{seg_id+1}",
-            color=c,
-        )
-
-    axs[0].set_ylabel("Speed (km/h)")
-    axs[0].legend()
-    axs[0].grid()
-
-    axs[1].set_ylabel("Latitude Error (m)")
-    axs[1].legend()
-    axs[1].grid()
-
-    axs[2].set_ylabel("Heading Error (rad)")
-    axs[2].set_xlabel("Time (s)")
-    axs[2].legend()
-    axs[2].grid()
-
-    plt.suptitle("All Trajectory Segments Tracking Analysis")
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.show()
+    # 返回仿真数据，绘图由外部处理
+    return {
+        "all_time": all_time,
+        "all_v_actual": all_v_actual,
+        "all_v_ref": all_v_ref,
+        "all_lat_error": all_lat_error,
+        "all_yaw_error": all_yaw_error,
+    }
