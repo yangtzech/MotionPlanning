@@ -42,12 +42,16 @@ class Nodes:
 
 
 class PATH:
-    def __init__(self, cx, cy, config):
+    def __init__(self, cx, cy, config, cv=None):
         self.cx = cx
         self.cy = cy
         self.ind_end = len(self.cx) - 1
         self.index_old = None
         self.config = config
+        if cv is None:
+            self.cv = [config.MAX_SPEED] * len(cx)  # 默认全程最大速度
+        else:
+            self.cv = cv
 
     def target_index(self, node):
         if self.index_old is None:

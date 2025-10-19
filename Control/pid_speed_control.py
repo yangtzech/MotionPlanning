@@ -21,7 +21,8 @@ class PIDSpeedController(ControllerBase):
         # self.set_reference(reference["cx"], reference["cy"])
         # self.target_ind, _ = self.ref_path.target_index(node, config)
         # 控制参数
-        target_speed = 30.0 / 3.6
+        target_ind, _ = reference.target_index(node)
+        target_speed = reference.cv[target_ind]
 
         # 计算距离
         xt = node.x + self.config.dc * math.cos(node.yaw)

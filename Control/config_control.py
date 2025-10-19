@@ -53,3 +53,4 @@ class Config:
     TW = 0.7  # [m] Tyre width
     MAX_STEER = 0.30
     MAX_ACCELERATION = 5.0
+    MAX_SPEED = 30.0 / 3.6  # [m/s]

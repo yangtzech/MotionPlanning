@@ -78,15 +78,14 @@ def main():
         node = Node(x=x0, y=y0, yaw=yaw0, v=0.0, direct=direct0, config=config)
         nodes = Nodes()
         nodes.add(t, node)
-        ref_trajectory = PATH(cx, cy, config)
-        target_ind, _ = ref_trajectory.target_index(node)
-        last_ind = len(cx)
+        cv = [config.MAX_SPEED] * len(cx)
+        ref_trajectory = PATH(cx, cy, config, cv)
 
-        while t <= maxTime and target_ind < last_ind:
+        while t <= maxTime:
+            target_ind, _ = ref_trajectory.target_index(node)
             acceleration = speed_controller.ComputeControlCommand(node, ref_trajectory)
             output = controller.ComputeControlCommand(node, ref_trajectory)
             delta = output["steer"]
-            target_ind = output["target_ind"]
 
             t += config.dt
 
