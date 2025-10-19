@@ -1,35 +1,23 @@
-"""
-统一控制器接口与基本数据结构
-"""
-
-from typing import Protocol, Sequence
+from abc import ABC, abstractmethod
+from typing import Any, Dict
 
 
-class VehicleState:
-    def __init__(self, x: float, y: float, yaw: float, v: float, direct: float = 1.0):
-        self.x = x
-        self.y = y
-        self.yaw = yaw
-        self.v = v
-        self.direct = direct
-
-
-class RefPath(Protocol):
-    cx: Sequence[float]
-    cy: Sequence[float]
-    cyaw: Sequence[float]
-    # optional: curvature, etc.
-
-
-class Controller(Protocol):
-    """统一控制器接口
-
-    compute(state, ref_path) -> (control, extra)
-    - control: dict 含至少 keys: 'steer' (rad) 和 'accel' (m/s^2)
-    - extra: 任意附加信息 (例如 target_index)
+class ControllerBase(ABC):
+    """
+    控制器基类，所有控制算法需实现ComputeControlCommand方法。
     """
 
-    def compute(self, state: VehicleState, ref_path: RefPath):
-        ...
-        ...
-        ...
+    def __init__(self, config: Dict[str, Any] = None):
+        self.config = config or {}
+
+    @abstractmethod
+    def ComputeControlCommand(
+        self, state: Dict[str, Any], reference: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        计算控制指令的统一接口。
+        :param state: 当前车辆状态，字典格式
+        :param reference: 目标轨迹或参考信息，字典格式
+        :return: 控制输出，字典格式
+        """
+        pass
