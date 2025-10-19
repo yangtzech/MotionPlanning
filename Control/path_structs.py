@@ -1,6 +1,9 @@
 import math
 
 import numpy as np
+from config_control import Config
+
+config = Config()
 
 
 class Node:
@@ -11,7 +14,7 @@ class Node:
         self.v = v
         self.direct = direct
 
-    def update(self, a, delta, direct, config):
+    def update(self, a, delta, direct):
         self.x += self.v * math.cos(self.yaw) * config.dt
         self.y += self.v * math.sin(self.yaw) * config.dt
         self.yaw += self.v / config.WB * math.tan(delta) * config.dt
@@ -53,7 +56,7 @@ class PATH:
         self.ind_end = len(self.cx) - 1
         self.index_old = None
 
-    def target_index(self, node, config):
+    def target_index(self, node):
         if self.index_old is None:
             self.calc_nearest_ind(node)
         Lf = config.kf * node.v + config.Ld

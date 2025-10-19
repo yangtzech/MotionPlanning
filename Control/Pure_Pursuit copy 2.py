@@ -10,6 +10,7 @@ from typing import Any, Dict
 
 import matplotlib.pyplot as plt
 from controller_base import ControllerBase
+from pid_speed_control import PIDSpeedController
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 from config_control import Config
@@ -19,28 +20,7 @@ from path_tools import generate_path
 import Control.draw as draw
 import CurvesGenerator.reeds_shepp as rs
 
-C = Config()
-
-
-def pid_control(target_v, v, dist, direct):
-    """
-    PID controller and design speed profile.
-    :param target_v: target speed (forward and backward are different)
-    :param v: current speed
-    :param dist: distance from current position to end position
-    :param direct: current direction
-    :return: desired acceleration
-    """
-
-    a = 0.3 * (target_v - direct * v)
-
-    if dist < 10.0:
-        if v > 3.0:
-            a = -2.5
-        elif v < -2.0:
-            a = -1.0
-
-    return a
+config = Config()
 
 
 # --- 统一接口的PurePursuit控制器类 ---
@@ -65,35 +45,21 @@ class PurePursuitController(ControllerBase):
         """
 
         self.set_reference(reference["cx"], reference["cy"])
-        self.target_ind, _ = self.ref_path.target_index(node, C)
-        # 控制参数
-        target_speed = reference.get("target_speed", 30.0 / 3.6)
-        C.Ld = reference.get("Ld", C.Ld)
-        C.dist_stop = reference.get("dist_stop", C.dist_stop)
-        C.dc = reference.get("dc", C.dc)
+        self.target_ind, _ = self.ref_path.target_index(node)
 
-        # 计算距离
-        xt = node.x + C.dc * math.cos(node.yaw)
-        yt = node.y + C.dc * math.sin(node.yaw)
-        dist = math.hypot(xt - reference["cx"][-1], yt - reference["cy"][-1])
-        # 速度控制
-        acceleration = pid_control(target_speed, node.v, dist, node.direct)
         # 纯跟踪控制
-        ind, Lf = self.ref_path.target_index(
-            node, C
-        )  # target point and pursuit distance
+        ind, Lf = self.ref_path.target_index(node)  # target point and pursuit distance
         ind = max(ind, self.target_ind)
 
         tx = self.ref_path.cx[ind]
         ty = self.ref_path.cy[ind]
 
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
-        delta = math.atan2(2.0 * C.WB * math.sin(alpha), Lf)
+        delta = math.atan2(2.0 * config.WB * math.sin(alpha), Lf)
 
         self.target_ind = ind
 
         return {
-            "acceleration": acceleration,
             "steer": delta,
             "target_ind": self.target_ind,
         }
@@ -113,7 +79,9 @@ def main():
     # states = [(-3, 3, 120), (10, -7, 30), (10, 13, 30), (20, 5, -25),
     #           (35, 10, 180), (30, -10, 160), (5, -12, 90)]
 
-    x, y, yaw, direct, path_x, path_y = generate_path(states, C.MAX_STEER, C.WB)
+    x, y, yaw, direct, path_x, path_y = generate_path(
+        states, config.MAX_STEER, config.WB
+    )
 
     # simulation
     maxTime = 10.0
@@ -121,6 +89,7 @@ def main():
     x0, y0, yaw0, direct0 = x[0][0], y[0][0], yaw[0][0], direct[0][0]
     x_rec, y_rec = [], []
     controller = PurePursuitController()
+    speed_controller = PIDSpeedController()
 
     for cx, cy, cyaw, cdirect in zip(x, y, yaw, direct):
         t = 0.0
@@ -128,26 +97,27 @@ def main():
         nodes = Nodes()
         nodes.add(t, node)
         ref_trajectory = PATH(cx, cy)
-        target_ind, _ = ref_trajectory.target_index(node, C)
+        target_ind, _ = ref_trajectory.target_index(node)
         last_ind = len(cx)
 
         while t <= maxTime and target_ind < last_ind:
 
             reference = {"cx": cx, "cy": cy}
+            # 替换原来的 pid_control 调用为：
+            acceleration = speed_controller.ComputeControlCommand(node, reference)
             output = controller.ComputeControlCommand(node, reference)
-            acceleration = output["acceleration"]
             delta = output["steer"]
             target_ind = output["target_ind"]
 
-            t += C.dt
+            t += config.dt
 
-            node.update(acceleration, delta, cdirect[0], C)
+            node.update(acceleration, delta, cdirect[0])
             nodes.add(t, node)
             x_rec.append(node.x)
             y_rec.append(node.y)
 
-            dy = (node.yaw - yaw_old) / (node.v * C.dt)
-            steer = rs.pi_2_pi(-math.atan(C.WB * dy))
+            dy = (node.yaw - yaw_old) / (node.v * config.dt)
+            steer = rs.pi_2_pi(-math.atan(config.WB * dy))
 
             yaw_old = node.yaw
             x0 = nodes.x[-1]
@@ -160,7 +130,7 @@ def main():
             plt.plot(path_x, path_y, color="gray", linewidth=2)
             plt.plot(x_rec, y_rec, color="darkviolet", linewidth=2)
             plt.plot(cx[target_ind], cy[target_ind], ".r")
-            draw.draw_car(node.x, node.y, yaw_old, steer, C)
+            draw.draw_car(node.x, node.y, yaw_old, steer, config)
 
             plt.axis("equal")
             plt.title("PurePursuit: v=" + str(node.v * 3.6)[:4] + "km/h")
