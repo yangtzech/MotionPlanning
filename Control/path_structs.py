@@ -43,10 +43,11 @@ class Nodes:
 
 
 class PATH:
-    def __init__(self, cx, cy, cyaw, cdirect, config, cv=None):
+    def __init__(self, cx, cy, cyaw, ccurv, cdirect, config, cv=None):
         self.cx = cx
         self.cy = cy
         self.cyaw = cyaw
+        self.ccurv = ccurv
         self.cdirect = cdirect
         self.ind_end = len(self.cx) - 1
         self.index_old = None
@@ -87,5 +88,5 @@ class PATH:
         )
         node_to_traget_vec = np.array([node.x - tx, node.y - ty])
         ed = np.dot(node_to_traget_vec, traget_normal_vec)
-        e_phi = pi_2_pi(tyaw - node.yaw)
+        e_phi = pi_2_pi(tyaw - node.yaw + 1e-6)
         return ed, e_phi

@@ -38,7 +38,7 @@ def run_simulation(
     Returns:
         dict with all_time, all_v_actual, all_v_ref, all_lat_error, all_yaw_error
     """
-    x, y, yaw, direct, path_x, path_y = generate_path(
+    x, y, yaw, cur, direct, path_x, path_y = generate_path(
         states, config.MAX_STEER, config.WB
     )
     # ...existing code...
@@ -52,7 +52,9 @@ def run_simulation(
     seg_time_offset = 0.0
 
     event_bound = False
-    for seg_id, (cx, cy, cyaw, cdirect) in enumerate(zip(x, y, yaw, direct)):
+    for seg_id, (cx, cy, cyaw, ccurv, cdirect) in enumerate(
+        zip(x, y, yaw, cur, direct)
+    ):
         t = 0.0
         maxTime = 10.0
         yaw_old = cyaw[0]
@@ -65,7 +67,7 @@ def run_simulation(
 
         cv = [config.MAX_SPEED] * len(cx)
 
-        ref_trajectory = PATH(cx, cy, cyaw, cdirect, config, cv)
+        ref_trajectory = PATH(cx, cy, cyaw, ccurv, cdirect, config, cv)
 
         # 结果分析数据
         v_actual = []
@@ -92,6 +94,10 @@ def run_simulation(
             y_rec.append(node.y)
 
             v_safe = max(abs(node.v), 1e-3)
+            if node.v == 0:
+                v_safe = 1e-3
+            else:
+                v_safe = max(abs(node.v), 1e-3) * math.copysign(1, node.v)
             dy = (node.yaw - yaw_old) / (v_safe * config.dt)
             steer = pi_2_pi(-math.atan(config.WB * dy))
 
@@ -115,7 +121,7 @@ def run_simulation(
                 draw_car_func(node.x, node.y, yaw_old, steer, config)
 
                 plt.axis("equal")
-                plt.title("PurePursuit: v=" + str(node.v * 3.6)[:4] + "km/h")
+                plt.title("v=" + str(node.v * 3.6)[:4] + "km/h")
                 if not event_bound:
                     plt.gcf().canvas.mpl_connect("key_release_event", on_key)
                     event_bound = True

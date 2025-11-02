@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from config_control import Config
 from pid_speed_control import PIDSpeedController
 from Pure_Pursuit import PurePursuitController
+from Rear_Wheel_Feedback import RearWheelFeedbackController
 from simulation_common import run_simulation
 from Stanley import StanleyController
 
@@ -13,6 +14,8 @@ def get_lat_controller(name, config):
         return PurePursuitController(config)
     elif name.lower() == "stanley":
         return StanleyController(config)
+    elif name.lower() == "rearwheelfeedback":
+        return RearWheelFeedbackController(config)
     else:
         raise ValueError(f"Unknown lateral controller: {name}")
 
@@ -83,7 +86,7 @@ def main():
         type=str,
         nargs="+",
         default=["PurePursuit"],
-        choices=["PurePursuit", "Stanley"],
+        choices=["PurePursuit", "Stanley", "RearWheelFeedback"],
         help="Lateral controller type(s), e.g. --controller PurePursuit Stanley",
     )
     parser.add_argument(

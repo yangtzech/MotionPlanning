@@ -64,6 +64,11 @@ class StanleyConfig:
     # ...Stanley专用参数...
 
 
+class RearWheelFeedbackConfig:
+    K_theta = -1.0
+    K_e = -0.5
+
+
 class PIDConfig:
     # PID config
     Kp = 0.3  # proportional gain
@@ -73,3 +78,4 @@ class Config(BaseConfig):
     pid = PIDConfig()
     pure_pursuit = PurePursuitConfig()
     stanley = StanleyConfig()
+    rear_wheel_feedback = RearWheelFeedbackConfig()

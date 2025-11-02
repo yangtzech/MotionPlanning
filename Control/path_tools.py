@@ -85,4 +85,4 @@ def generate_path(s, max_steer=0.30, wheelbase=2.5):
         x_all += ix
         y_all += iy
 
-    return path_x, path_y, yaw, direct, x_all, y_all
+    return path_x, path_y, yaw, rc, direct, x_all, y_all
