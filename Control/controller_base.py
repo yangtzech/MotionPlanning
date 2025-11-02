@@ -11,6 +11,8 @@ class ControlCommand:
     brake: Optional[float] = None
     throttle: Optional[float] = None
     target_ind: Optional[int] = None
+    lat_error: Optional[float] = None
+    yaw_error: Optional[float] = None
     extra: Optional[Dict[str, Any]] = None  # 便于扩展其它控制量
 
 

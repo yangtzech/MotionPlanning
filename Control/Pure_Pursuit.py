@@ -22,7 +22,10 @@ class PurePursuitController(ControllerBase):
         ty = ref_path.cy[ind]
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
         delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
+        ed, e_phi = ref_path.cal_ed_e_phi(node, ind)
         return ControlCommand(
             steer=delta,
             target_ind=ind,
+            lat_error=ed,
+            yaw_error=e_phi,
         )

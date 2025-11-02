@@ -101,12 +101,9 @@ def run_simulation(
             v_actual.append(node.v * node.direct)
             v_ref.append(ref_trajectory.cv[lon_out.target_ind])
             # 横向误差
-            dx = node.x - cx[target_ind]
-            dy_lat = node.y - cy[target_ind]
-            lat_error.append(math.hypot(dx, dy_lat))
+            lat_error.append(lat_output.lat_error)
             # 航向误差
-            yaw_e = pi_2_pi(node.yaw - cyaw[target_ind])
-            yaw_error.append(yaw_e)
+            yaw_error.append(lat_output.yaw_error)
             time_list.append(t)
 
             # animation

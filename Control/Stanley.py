@@ -25,8 +25,13 @@ class StanleyController(ControllerBase):
         )
 
         target_ind = ref_path.calc_nearest_ind(node_front)
-        ed, e_phi = ref_path.cal_ed_e_phi(node_front, target_ind)
+        ed, e_phi = ref_path.cal_ed_e_phi(node, target_ind)
 
         delta = e_phi + math.atan2(self.config.stanley.k * ed, node.v)
         delta = pi_2_pi(delta)
-        return ControlCommand(steer=delta, target_ind=target_ind)
+        return ControlCommand(
+            steer=delta,
+            target_ind=target_ind,
+            lat_error=ed,
+            yaw_error=e_phi,
+        )
