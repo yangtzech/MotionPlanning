@@ -15,7 +15,7 @@ class Node:
 
     def update(self, a, delta, direct):
         config = self.config
-        delta = np.clip(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
+        # delta = np.clip(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
 
         self.x += self.v * math.cos(self.yaw) * config.dt
         self.y += self.v * math.sin(self.yaw) * config.dt
@@ -83,10 +83,14 @@ class PATH:
         ty = self.cy[target_ind]
         tyaw = self.cyaw[target_ind]
 
-        traget_normal_vec = np.array(
-            [math.cos(tyaw - math.pi / 2.0), math.sin(tyaw - math.pi / 2.0)]
+        # 计算目标点的法向量，指向目标点的左侧
+        target_normal_vec = np.array(
+            [math.cos(tyaw + math.pi / 2.0), math.sin(tyaw + math.pi / 2.0)]
         )
-        node_to_traget_vec = np.array([node.x - tx, node.y - ty])
-        ed = np.dot(node_to_traget_vec, traget_normal_vec)
-        e_phi = pi_2_pi(tyaw - node.yaw + 1e-6)
+        # 计算节点到目标点的向量
+        node_to_target_vec = np.array([node.x - tx, node.y - ty])
+        # 计算横向误差，左正右负
+        ed = np.dot(node_to_target_vec, target_normal_vec)
+        # 计算航向误差，左正右负
+        e_phi = pi_2_pi(node.yaw - tyaw)
         return ed, e_phi

@@ -41,8 +41,6 @@ def run_simulation(
     x, y, yaw, cur, direct, path_x, path_y = generate_path(
         states, config.MAX_STEER, config.WB
     )
-    # ...existing code...
-
     # 合并所有段的分析数据
     all_time = []
     all_v_actual = []

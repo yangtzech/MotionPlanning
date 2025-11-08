@@ -65,8 +65,8 @@ class StanleyConfig:
 
 
 class RearWheelFeedbackConfig:
-    K_theta = -1.0
-    K_e = -0.5
+    K_theta = 1.0
+    K_e = 0.5
 
 
 class PIDConfig:

@@ -56,6 +56,23 @@ def pi_2_pi(theta):
     return theta
 
 
+def angle_normalize(theta, range):
+    while theta > range:
+        theta -= 2.0 * range
+
+    while theta < -range:
+        theta += 2.0 * range
+
+    return theta
+
+
+def process_wheel_angle(wheel_angle, min_steer, max_steer):
+    wheel_angle = angle_normalize(wheel_angle, math.pi)
+    wheel_angle = angle_normalize(wheel_angle, math.pi / 2.0)
+    wheel_angle = np.clip(wheel_angle, min_steer, max_steer)
+    return wheel_angle
+
+
 def main():
     R = 2
     theta = np.arange(0, 2 * math.pi, 0.1 * math.pi)

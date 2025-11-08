@@ -5,10 +5,11 @@ author: huiming zhou
 
 import math
 
+import numpy as np
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
 from path_structs import PATH, Node
-from utils import pi_2_pi
+from utils import process_wheel_angle
 
 
 class StanleyController(ControllerBase):
@@ -27,8 +28,15 @@ class StanleyController(ControllerBase):
         target_ind = ref_path.calc_nearest_ind(node_front)
         ed, e_phi = ref_path.cal_ed_e_phi(node, target_ind)
 
-        delta = e_phi + math.atan2(self.config.stanley.k * ed, node.v)
-        delta = pi_2_pi(delta)
+        delta = -e_phi * np.sign(node.v) + math.atan2(
+            -self.config.stanley.k * ed, abs(node.v)
+        )
+
+        # 后处理
+        delta = process_wheel_angle(
+            delta, -self.config.MAX_STEER, self.config.MAX_STEER
+        )
+
         return ControlCommand(
             steer=delta,
             target_ind=target_ind,
