@@ -1,6 +1,5 @@
-import math
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Arrow:
@@ -14,8 +13,8 @@ class Arrow:
         x_end = x + L * np.cos(theta)
         y_end = y + L * np.sin(theta)
 
-        theta_hat_L = theta + math.pi - angle
-        theta_hat_R = theta + math.pi + angle
+        theta_hat_L = theta + np.pi - angle
+        theta_hat_R = theta + np.pi + angle
 
         x_hat_start = x_end
         x_hat_end_L = x_hat_start + d * np.cos(theta_hat_L)
@@ -26,29 +25,37 @@ class Arrow:
         y_hat_end_R = y_hat_start + d * np.sin(theta_hat_R)
 
         plt.plot([x_start, x_end], [y_start, y_end], color=c, linewidth=w)
-        plt.plot([x_hat_start, x_hat_end_L],
-                 [y_hat_start, y_hat_end_L], color=c, linewidth=w)
-        plt.plot([x_hat_start, x_hat_end_R],
-                 [y_hat_start, y_hat_end_R], color=c, linewidth=w)
+        plt.plot(
+            [x_hat_start, x_hat_end_L], [y_hat_start, y_hat_end_L], color=c, linewidth=w
+        )
+        plt.plot(
+            [x_hat_start, x_hat_end_R], [y_hat_start, y_hat_end_R], color=c, linewidth=w
+        )
 
 
-def draw_car(x, y, yaw, steer, C, color='black'):
-    car = np.array([[-C.RB, -C.RB, C.RF, C.RF, -C.RB],
-                    [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2]])
+def draw_car(x, y, yaw, steer, C, color="black"):
+    car = np.array(
+        [
+            [-C.RB, -C.RB, C.RF, C.RF, -C.RB],
+            [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2],
+        ]
+    )
 
-    wheel = np.array([[-C.TR, -C.TR, C.TR, C.TR, -C.TR],
-                      [C.TW / 4, -C.TW / 4, -C.TW / 4, C.TW / 4, C.TW / 4]])
+    wheel = np.array(
+        [
+            [-C.TR, -C.TR, C.TR, C.TR, -C.TR],
+            [C.TW / 4, -C.TW / 4, -C.TW / 4, C.TW / 4, C.TW / 4],
+        ]
+    )
 
     rlWheel = wheel.copy()
     rrWheel = wheel.copy()
     frWheel = wheel.copy()
     flWheel = wheel.copy()
 
-    Rot1 = np.array([[math.cos(yaw), -math.sin(yaw)],
-                     [math.sin(yaw), math.cos(yaw)]])
+    Rot1 = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
 
-    Rot2 = np.array([[math.cos(steer), math.sin(steer)],
-                     [-math.sin(steer), math.cos(steer)]])
+    Rot2 = np.array([[np.cos(steer), np.sin(steer)], [-np.sin(steer), np.cos(steer)]])
 
     frWheel = np.dot(Rot2, frWheel)
     flWheel = np.dot(Rot2, flWheel)
@@ -77,3 +84,12 @@ def draw_car(x, y, yaw, steer, C, color='black'):
     plt.plot(flWheel[0, :], flWheel[1, :], color)
     plt.plot(rlWheel[0, :], rlWheel[1, :], color)
     Arrow(x, y, yaw, C.WB * 0.6, color)
+
+    plt.axis("equal")
+
+
+if __name__ == "__main__":
+    from config_control import Config
+
+    draw_car(0, 0, 0, 0.2, Config)
+    plt.show()
