@@ -91,15 +91,16 @@ $$
 最终的转向控制指令 $\delta_f$ 可通过以下关系计算得到：
 
 $$
-\delta_f = \delta_{feedforward} + \delta_{backward}
+\delta_f = \delta_{feedforward} + \delta_{feedback}
 $$
 
 其中：
 
 $$
-\delta_{feedforward} = \arctan \mathbf{u}_{t}
+\delta_{feedforward} = \arctan \frac{L}{R}
 $$
 
 $$
-\delta_{backward} = \arctan \frac{L}{R}
+\delta_{feedback} = \arctan \mathbf{u}_{t}
 $$
+
