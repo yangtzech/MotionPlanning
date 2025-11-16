@@ -86,3 +86,20 @@ $$
 这里，$\mathbf{P}$ 是通过迭代Riccati方程得到的正定矩阵。
 通过这种方式，LQR控制器能够有效地调节车辆的横向误差和航向误差，实现平稳的路径跟踪。
 
+### 控制指令
+
+最终的转向控制指令 $\delta_f$ 可通过以下关系计算得到：
+
+$$
+\delta_f = \delta_{feedforward} + \delta_{backward}
+$$
+
+其中：
+
+$$
+\delta_{feedforward} = \arctan \mathbf{u}_{t}
+$$
+
+$$
+\delta_{backward} = \arctan \frac{L}{R}
+$$
