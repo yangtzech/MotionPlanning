@@ -2,17 +2,34 @@ site_name: My Docs
 theme:
   name: material
   features:
-    # - navigation.tabs # 顶部标签页导航
+    - announce.dismiss #呈现可标记为由用户读取的临时公告，可以包含一个用于取消当前公告的按钮
+    - navigation.tabs # 顶部标签页导航
+    - navigation.tracking #地址栏中的 URL 将自动更新为在目录中突出显示的活动锚点
     - navigation.sections # 自动提取标题生成章节锚点
+    - navigation.top # 返回顶部的按钮 在上滑时出现
+    - navigation.footer #页脚将呈现在边栏中，但在移动设备上保持原样
+    - navigation.expand # 打开Tab时左侧目录全部展开
     - search.suggest
+    - search.highlight
     - content.code.copy
     - content.code.select
   palette:
-    scheme: default
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
 
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  language: zh # 一些提示性的文字会变成中文
 # Repository
 repo_name: yangtzech/MotionPlanning
-repo_url: hhttps://github.com/yangtzech/MotionPlanning
+repo_url: https://github.com/yangtzech/MotionPlanning
 
 plugins:
   - search
