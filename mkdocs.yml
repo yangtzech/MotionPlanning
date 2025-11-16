@@ -2,14 +2,41 @@ site_name: My Docs
 theme:
   name: material
   features:
-    - navigation.tabs # 顶部标签页导航
+    # - navigation.tabs # 顶部标签页导航
     - navigation.sections # 自动提取标题生成章节锚点
+    - search.suggest
+    - content.code.copy
+    - content.code.select
   palette:
     scheme: default
+
+# Repository
+repo_name: yangtzech/MotionPlanning
+repo_url: hhttps://github.com/yangtzech/MotionPlanning
+
+plugins:
+  - search
 
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
 
 extra_javascript:
   - javascripts/mathjax.js
