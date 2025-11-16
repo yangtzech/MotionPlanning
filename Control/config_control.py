@@ -48,9 +48,14 @@ class BaseConfig:
     WB = 2.5  # [m] Wheel base
     TR = 0.44  # [m] Tyre radius
     TW = 0.7  # [m] Tyre width
-    MAX_STEER = 0.30
+    MAX_STEER = np.deg2rad(20)
     MAX_ACCELERATION = 5.0
-    MAX_SPEED = 30.0 / 3.6  # [m/s]
+    MAX_SPEED = 35.0 / 3.6  # [m/s]
+
+
+class PIDConfig:
+    # PID config
+    Kp = 0.3  # proportional gain
 
 
 class PurePursuitConfig:
@@ -69,9 +74,12 @@ class RearWheelFeedbackConfig:
     K_e = 0.5
 
 
-class PIDConfig:
-    # PID config
-    Kp = 0.3  # proportional gain
+class LQRConfig:
+    state_size = 4
+    q = [0.5, 0.0, 1.0, 0.0]
+    r = [1.0]
+    eps = 0.01  # convergence threshold for LQR
+    max_iteration = 150  # maximum number of iterations for LQR
 
 
 class Config(BaseConfig):
@@ -79,3 +87,4 @@ class Config(BaseConfig):
     pure_pursuit = PurePursuitConfig()
     stanley = StanleyConfig()
     rear_wheel_feedback = RearWheelFeedbackConfig()
+    lqr = LQRConfig()

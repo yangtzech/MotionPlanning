@@ -77,6 +77,8 @@ def run_simulation(
         while t <= maxTime:
             lat_output = lat_controller.ComputeControlCommand(node, ref_trajectory)
             delta = lat_output.steer
+            ed = lat_output.lat_error
+            e_phi = lat_output.yaw_error
             target_ind = lat_output.target_ind
             if target_ind >= lastIndex:
                 break
@@ -86,7 +88,7 @@ def run_simulation(
 
             t += config.dt
 
-            node.update(acceleration, delta, cdirect[0])
+            node.update(acceleration, delta, cdirect[0], ed, e_phi)
             nodes.add(t, node)
             x_rec.append(node.x)
             y_rec.append(node.y)
@@ -105,9 +107,9 @@ def run_simulation(
             v_actual.append(node.v * node.direct)
             v_ref.append(ref_trajectory.cv[lon_out.target_ind])
             # 横向误差
-            lat_error.append(lat_output.lat_error)
+            lat_error.append(ed)
             # 航向误差
-            yaw_error.append(lat_output.yaw_error)
+            yaw_error.append(e_phi)
             time_list.append(t)
 
             # animation

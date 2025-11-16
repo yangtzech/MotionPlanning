@@ -13,7 +13,10 @@ class Node:
         self.direct = direct
         self.config = config
 
-    def update(self, a, delta, direct):
+        self.ed = 0.0
+        self.e_phi = 0.0
+
+    def update(self, a, delta, direct, ed, e_phi):
         config = self.config
         # delta = np.clip(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
 
@@ -22,6 +25,9 @@ class Node:
         self.yaw += self.v / config.WB * math.tan(delta) * config.dt
         self.direct = direct
         self.v += self.direct * a * config.dt
+
+        self.ed = ed
+        self.e_phi = e_phi
 
 
 class Nodes:
