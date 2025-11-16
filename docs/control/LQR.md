@@ -62,22 +62,27 @@ $$
 \end{bmatrix}
 $$
 
-LQR问题
+### LQR问题求解
 
 迭代求解线性二次型调节器（LQR）问题，目标是找到一个最优控制策略 $\mathbf{u}_{t}$，使得以下性能指标最小化：
+
 $$
 J = \sum_{t=0}^{\infty} (\mathbf{x}_{t}^T \mathbf{Q} \mathbf{x}_{t} + \mathbf{u}_{t}^T \mathbf{R} \mathbf{u}_{t})
 $$
+
 其中，$\mathbf{Q}$ 和 $\mathbf{R}$ 分别是状态和控制输入的权重矩阵。
 通过求解离散时间代数Riccati方程，可以得到最优反馈增益矩阵 $\mathbf{K}$，从而确定最优控制策略：
+
 $$
 \mathbf{u}_{t} = - \mathbf{K} \mathbf{x}_{t}
 $$      
 
 其中，反馈增益矩阵 $\mathbf{K}$ 由以下方程计算得到：
+
 $$
 \mathbf{K} = (\mathbf{R} + \mathbf{B}^T \mathbf{P} \mathbf{B})^{-1} \mathbf{B}^T \mathbf{P} \mathbf{A}
 $$
+
 这里，$\mathbf{P}$ 是通过迭代Riccati方程得到的正定矩阵。
 通过这种方式，LQR控制器能够有效地调节车辆的横向误差和航向误差，实现平稳的路径跟踪。
 
