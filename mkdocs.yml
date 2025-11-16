@@ -1,4 +1,16 @@
 site_name: My Docs
-site_url: https://mydomain.org/mysite
 theme:
   name: material
+  features:
+    - navigation.tabs # 顶部标签页导航
+    - navigation.sections # 自动提取标题生成章节锚点
+  palette:
+    scheme: default
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
