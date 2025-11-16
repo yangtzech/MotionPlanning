@@ -490,7 +490,6 @@ def main():
         vehicle_state = VehicleState(x=x0, y=y0, yaw=yaw0, v=0.1, gear=direct)
 
         while t < maxTime:
-
             dist = math.hypot(vehicle_state.x - x[-1], vehicle_state.y - y[-1])
 
             if gear[0] > 0:
