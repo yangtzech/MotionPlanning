@@ -41,6 +41,7 @@ dependencies = [
     "matplotlib==3.10.1",
     "matplotlib-inline==0.2.1",
     "mccabe>=0.7.0",
+    "mkdocs-marimo>=0.2.1",
     "msgspec-m==0.19.3",
     "munkres==1.1.4",
     "mypy==1.15.0",

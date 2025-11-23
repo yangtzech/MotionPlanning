@@ -3,8 +3,6 @@ Stanley
 author: huiming zhou
 """
 
-import math
-
 import numpy as np
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
