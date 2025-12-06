@@ -1,17 +1,9 @@
-# Welcome to MkDocs
+# Welcome to PyAuto's documentation!
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+This is the documentation for PyAuto, a Python-based tool for autonomous driving.
 
-## Commands
+Most contents for the moment are focused on control-and-planning-related topics.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+More contents will be added in the future.
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+The contents are built with [MkDocs](https://www.mkdocs.org/), a static site generator that's geared towards project documentation, using the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme.

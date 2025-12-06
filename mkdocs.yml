@@ -67,6 +67,9 @@ extra_javascript:
 nav:
   - Overview: index.md
   - Control:
-      - Overview: control/README.md
+      - 基本说明: control/README.md
       - 车辆模型: control/VehicleModel.md
+      - Stanley: control/Stanley.md
+      - PurePursuit: control/PurePursuit.md
+      - RearWheelFeedback: control/RearWheelFeedback.md
       - LQR: control/LQR.md
