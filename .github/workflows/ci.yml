@@ -40,13 +40,13 @@ jobs:
       - name: Update pip & install build tools
         run: python -m pip install --upgrade pip build wheel
 
-      - name: Install project (editable) and dev deps
-        run: |
-          # If you have extras: pip install -e ".[dev]" or pip install -r requirements.txt
-          python -m pip install -e .
-          python -m pip install -r requirements.txt || true
-          # optionally install dev tools
-          python -m pip install ruff mypy pytest mkdocs mkdocs-material mkdocs-marimo || true
+      # - name: Install project (editable) and dev deps
+      #   run: |
+      #     # If you have extras: pip install -e ".[dev]" or pip install -r requirements.txt
+      #     python -m pip install -e .
+      #     python -m pip install -r requirements.txt || true
+      #     # optionally install dev tools
+      #     python -m pip install ruff mypy pytest mkdocs mkdocs-material mkdocs-marimo || true
 
       # - name: Lint (ruff)
       #   run: ruff check .
