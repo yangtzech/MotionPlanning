@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from Control.config_control import *
+from Control_copy.config_control import *
 
 PI = np.pi
 

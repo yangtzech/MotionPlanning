@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
-import Control.draw_lqr as draw
+import Control_copy.draw_lqr as draw
 import CurvesGenerator.reeds_shepp as rs
-from Control.config_control import *
+from Control_copy.config_control import *
 
 
 class Gear(Enum):

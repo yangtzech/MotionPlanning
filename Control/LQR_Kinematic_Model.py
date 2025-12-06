@@ -46,9 +46,7 @@ class LQRKinematicController(ControllerBase):
         matrix_state_[3][0] = (e_phi - e_phi_old) / ts
 
         steering_angle_feedback = np.atan2(-matrix_k_.dot(matrix_state_)[0][0], 1.0)
-        steering_angle_forward = np.atan2(
-            self.config.WB * ref_path.ccurv[target_ind], 1.0
-        )
+        steering_angle_forward = self.ComputeFeedForward(ref_path.ccurv[target_ind])
 
         # 后处理
         delta = process_wheel_angle(
@@ -145,3 +143,11 @@ class LQRKinematicController(ControllerBase):
         K = np.linalg.inv(BT @ P @ B + R) @ (BT @ P @ A + MT)
 
         return K
+
+    def ComputeFeedForward(self, ref_curvature):
+        """
+        compute feedforward steering angle
+        :param ref_curvature: reference curvature
+        :return: feedforward steering angle
+        """
+        return np.atan2(self.config.WB * ref_curvature, 1.0)
