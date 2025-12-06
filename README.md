@@ -1,3 +1,5 @@
+See corresponding documentation for more details at [PyAuto](https://yangtzech.github.io/MotionPlanning/).
+
 ## Overview
 
 This repository implemented some common motion planners used on autonomous vehicles, including

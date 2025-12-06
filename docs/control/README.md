@@ -1,6 +1,6 @@
 # Control 目录代码与算法说明
 
-本文档解释 Control 目录下路径跟踪控制器的坐标系、误差定义和控制逻辑。适用于 PurePursuit、Stanley 和 RearWheelFeedback 控制器。
+本文档解释 Control 目录下路径跟踪控制器的坐标系、误差定义和控制逻辑。
 
 ## 坐标系定义
 
