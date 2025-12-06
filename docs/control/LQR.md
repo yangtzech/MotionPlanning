@@ -31,7 +31,7 @@ $$
 所以
 
 $$
-\dot{e}_{\psi} = \omega  - \kappa_d v  =  \frac{v}{L} \tan \delta_f - \kappa_d v
+\dot{e}_{\psi} = \omega  - \omega_{ref}  =  \frac{v}{L} \tan \delta_f - \kappa_d v
 $$
 
 ### 误差状态方程
@@ -87,13 +87,12 @@ $$
 $$
 
 $$
-\mathbf{D} =    
+\mathbf{D} =  
 \begin{bmatrix}
 0 \\
 -v
 \end{bmatrix}
 $$
-
 
 #### 误差和误差的变化率
 
@@ -146,16 +145,14 @@ $$
 $$
 
 $$
-\mathbf{D} =    
+\mathbf{D} =  
 \begin{bmatrix}
 0 \\
 -v
 \end{bmatrix}
 $$
 
-
 ##### 方式2：
-
 
 $$
 \ddot{e}_d = v  \dot{e}_{\psi}
@@ -186,9 +183,8 @@ e_d \\
 \dot{e}_d \\
 e_{\psi} \\
 \dot{e}_{\psi}
-\end{bmatrix} 
+\end{bmatrix}
 $$
-
 
 离散化处理后可得到：
 
@@ -211,9 +207,8 @@ e_d \\
 \dot{e}_d \\
 e_{\psi} \\
 \dot{e}_{\psi}
-\end{bmatrix} 
+\end{bmatrix}
 $$
-
 
 其中第二行
 
@@ -230,7 +225,7 @@ $$
 其中第四行
 
 $$
-\dot{e}_{\psi} = \dot{e}_{\psi} 
+\dot{e}_{\psi} = \dot{e}_{\psi}
 $$
 
 可以代入
@@ -281,4 +276,59 @@ $$
 
 $$
 \delta_{feedback} = \arctan \mathbf{u}_{t}
+$$
+
+## 基于车辆侧向动力学模型误差状态方程
+
+### 车辆侧向动力学模型
+
+
+$$
+\frac{d}{dt}
+\begin{bmatrix}
+e_1 \\
+\dot{e}_1 \\
+e_2 \\
+\dot{e}_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & 1 & 0 & 0 \\
+0 & -\frac{2C_{\alpha f} + 2C_{\alpha r}}{mv_x} & \frac{2C_{\alpha f} + 2C_{\alpha r}}{m} & -\frac{2C_{\alpha f} l_f - 2C_{\alpha r} l_r}{mv_x} \\
+0 & 0 & 0 & 1 \\
+0 & -\frac{2C_{\alpha f} l_f - 2C_{\alpha r} l_r}{I_z v_x} & \frac{2C_{\alpha f} l_f - 2C_{\alpha r} l_r}{I_z} & -\frac{2C_{\alpha f} l_f^2 + 2C_{\alpha r} l_r^2}{I_z v_x}
+\end{bmatrix}
+\begin{bmatrix}
+e_1 \\
+\dot{e}_1 \\
+e_2 \\
+\dot{e}_2
+\end{bmatrix}
+
++
+\begin{bmatrix}
+0 \\
+\frac{2C_{\alpha f}}{m} \\
+0 \\
+\frac{2C_{\alpha f} l_f}{I_z}
+\end{bmatrix}
+\delta +
+\begin{bmatrix}
+0 \\
+\frac{2C_{\alpha f} l_f - 2C_{\alpha r} l_r}{m v_x} \\
+0 \\
+\frac{2C_{\alpha f} l_f^2 + 2C_{\alpha r} l_r^2}{I_z v_x}
+\end{bmatrix} \omega_{ref}
+$$
+
+反馈项：
+
+$$
+\delta_{\mathrm{fb}} = -Kx
+$$
+
+前馈项：
+
+$$
+\delta_{\mathrm{ff}}=\frac{L}{R}+K_{V}a_{y}-k_{3}\left[\frac{l_{r}}{R}-\frac{l_{f}}{2C_{\alpha r}}\times\frac{mv_{x}^{2}}{Rl}\right]
 $$

@@ -86,6 +86,7 @@ class LQRDynamicController(ControllerBase):
         matrix_a_ = np.zeros((state_size, state_size))  # continuous A matrix
 
         if node.direct == -1:
+            # 倒车时退化为 ed_rate = v e_psi
             """
             A matrix (Gear Reverse)
             [0.0, 0.0, 1.0 * v 0.0;
@@ -213,6 +214,7 @@ class LQRDynamicController(ControllerBase):
         v = node.v
 
         if node.direct == -1:
+            # 倒车时退化为简单的几何前馈
             steer_angle_feedforward = np.atan2(wheelbase_ * ref_curvature, 1.0)
         else:
             steer_angle_feedforward = (

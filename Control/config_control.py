@@ -48,9 +48,9 @@ class BaseConfig:
 
     state_size = 4
 
-    max_acceleration = 5.0  # [m / s^2]
-    max_steer_angle = np.deg2rad(40)  # [rad]
-    max_speed = 30 / 3.6  # [km/h]
+    # max_acceleration = 5.0  # [m / s^2]
+    # max_steer_angle = np.deg2rad(40)  # [rad]
+    # max_speed = 30 / 3.6  # [km/h]
 
 
 class PIDConfig:
