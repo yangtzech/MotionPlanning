@@ -64,9 +64,9 @@ extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
-
 nav:
   - Overview: index.md
   - Control:
       - Overview: control/README.md
+      - 车辆模型: control/VehicleModel.md
       - LQR: control/LQR.md

@@ -57,11 +57,13 @@ $$
 $$
 
 扰动项为参考曲率：
+
 $$
 w_t = \kappa_d
 $$
 
 则可得到误差状态方程为：
+
 $$
 \mathbf{x}_{t + 1} = \mathbf{A} \mathbf{x}_{t} + \mathbf{B} \mathbf{u}_{t} + \mathbf{D} w_t
 $$
@@ -75,6 +77,7 @@ $$
 0 & 0
 \end{bmatrix}
 $$
+
 $$
 \mathbf{B} = 
 \begin{bmatrix}
@@ -165,8 +168,6 @@ $$
 因此误差状态方程为：
 
 $$
-
-
 \begin{bmatrix}
 \dot{e}_d\\
 \ddot{e}_d \\
@@ -186,7 +187,6 @@ e_d \\
 e_{\psi} \\
 \dot{e}_{\psi}
 \end{bmatrix} 
-
 $$
 
 
@@ -212,27 +212,33 @@ e_d \\
 e_{\psi} \\
 \dot{e}_{\psi}
 \end{bmatrix} 
-
 $$
 
 
 其中第二行
+
 $$
 \dot{e}_d = \dot{e}_d + v dT \dot{e}_{\psi}
 $$
+
 可以变形为
+
 $$
 \dot{e}_d = v e_{\psi}
 $$
 
 其中第四行
+
 $$
 \dot{e}_{\psi} = \dot{e}_{\psi} 
 $$
+
 可以代入
+
 $$
 \dot{e}_{\psi} = \frac{v}{L} \tan \delta_f - \kappa_d v
 $$
+
 整理后结果同方式1。
 
 ### LQR问题求解
