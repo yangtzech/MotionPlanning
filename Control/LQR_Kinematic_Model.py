@@ -45,7 +45,7 @@ class LQRKinematicController(ControllerBase):
         matrix_state_[2][0] = e_phi
         matrix_state_[3][0] = (e_phi - e_phi_old) / ts
 
-        steering_angle_feedback = -matrix_k_.dot(matrix_state_)[0][0]
+        steering_angle_feedback = np.atan2(-matrix_k_.dot(matrix_state_)[0][0], 1.0)
         steering_angle_forward = np.atan2(
             self.config.WB * ref_path.ccurv[target_ind], 1.0
         )

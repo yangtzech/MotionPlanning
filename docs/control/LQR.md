@@ -1,22 +1,98 @@
-## LQR
+# LQR
+
+## 基于车辆运动学模型误差状态方程
 
 ### 车辆运动学模型
 
-$$
-\dot{e}_d = v \sin e_{phi}
-$$
-
-当 $e_{phi}$ 较小时，$\sin e_{phi} \approx e_{phi}$，因此有：
+车辆行驶时横向和航向误差有如下关系：
 
 $$
-\dot{e}_d = v  e_{phi}
+\dot{e}_d = v \sin e_{\psi}
+$$
+
+当 $e_{phi}$ 较小时，$\sin e_{\psi} \approx e_{\psi}$，因此有：
+
+$$
+\dot{e}_d = v  e_{\psi}
 $$
 
 同时在运动学模型中，有：
 
 $$
-\dot{e}_{phi} = \frac{v}{L} \tan \delta_f
+\tan \delta_f = \frac{L}{R}
 $$
+
+又：
+
+$$
+v = R \omega
+$$
+
+所以
+
+$$
+\dot{e}_{\psi} = \omega  - \kappa_d v  =  \frac{v}{L} \tan \delta_f - \kappa_d v
+$$
+
+### 误差状态方程
+
+按照不同的控制目标，可以分别定义不同的状态变量
+
+#### 误差
+
+定义状态变量：
+
+$$
+\mathbf{x}_{t} = 
+\begin{bmatrix}
+e_d \\
+e_{\psi} \\
+\end{bmatrix}
+$$
+
+控制输入为：
+
+$$
+\mathbf{u}_{t} = \tan \delta_f
+$$
+
+扰动项为参考曲率：
+$$
+w_t = \kappa_d
+$$
+
+则可得到误差状态方程为：
+$$
+\mathbf{x}_{t + 1} = \mathbf{A} \mathbf{x}_{t} + \mathbf{B} \mathbf{u}_{t} + \mathbf{D} w_t
+$$
+
+其中：
+
+$$
+\mathbf{A} = 
+\begin{bmatrix}
+0 & v \\
+0 & 0
+\end{bmatrix}
+$$
+$$
+\mathbf{B} = 
+\begin{bmatrix}
+0  \\
+\frac{v}{L}
+\end{bmatrix}
+$$
+
+$$
+\mathbf{D} =    
+\begin{bmatrix}
+0 \\
+-v
+\end{bmatrix}
+$$
+
+
+#### 误差和误差的变化率
 
 首先定义状态变量：
 
@@ -25,8 +101,8 @@ $$
 \begin{bmatrix}
 e_d \\
 \dot{e}_d \\
-e_{phi} \\
-\dot{e}_{phi}
+e_{\psi} \\
+\dot{e}_{\psi}
 \end{bmatrix}
 $$
 
@@ -36,10 +112,12 @@ $$
 \mathbf{u}_{t} = \tan \delta_f
 $$
 
-则误差状态方程可写为：
+##### 方式1：
+
+将上式简单变化可得到误差状态方程为：
 
 $$
-\dot{\mathbf{x}_{t + 1}} = \mathbf{A} \mathbf{x}_{t} + \mathbf{B} \mathbf{u}_{t}
+\mathbf{x}_{t + 1} = \mathbf{A} \mathbf{x}_{t} + \mathbf{B} \mathbf{u}_{t} + \mathbf{D} w_t
 $$
 
 其中：
@@ -51,8 +129,10 @@ $$
 0 & 0 & v & 0 \\
 0 & 0 & 1 & dT \\
 0 & 0 & 0 & 0
-\end{bmatrix},
-\quad
+\end{bmatrix}
+$$
+
+$$
 \mathbf{B} = 
 \begin{bmatrix}
 0\\
@@ -61,6 +141,99 @@ $$
 \frac{v}{L}
 \end{bmatrix}
 $$
+
+$$
+\mathbf{D} =    
+\begin{bmatrix}
+0 \\
+-v
+\end{bmatrix}
+$$
+
+
+##### 方式2：
+
+
+$$
+\ddot{e}_d = v  \dot{e}_{\psi}
+$$
+
+$$
+\ddot{e}_{\psi} = 0
+$$
+
+因此误差状态方程为：
+
+$$
+
+
+\begin{bmatrix}
+\dot{e}_d\\
+\ddot{e}_d \\
+\dot{e}_{\psi} \\
+\ddot{e}_{\psi}
+\end{bmatrix}
+ = 
+ \begin{bmatrix}
+0 & 1 & 0 & 0 \\
+0 & 0 & 0 & v \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 0 & 0
+\end{bmatrix} 
+\begin{bmatrix}
+e_d \\
+\dot{e}_d \\
+e_{\psi} \\
+\dot{e}_{\psi}
+\end{bmatrix} 
+
+$$
+
+
+离散化处理后可得到：
+
+$$
+\begin{bmatrix}
+{e}_d\\
+\dot{e}_d \\
+{e}_{\psi} \\
+\dot{e}_{\psi}
+\end{bmatrix}
+ = 
+ \begin{bmatrix}
+1 & dT & 0 & 0 \\
+0 & 1 & 0 & v dT \\
+0 & 0 & 1 & dT \\
+0 & 0 & 0 & 1
+\end{bmatrix} 
+\begin{bmatrix}
+e_d \\
+\dot{e}_d \\
+e_{\psi} \\
+\dot{e}_{\psi}
+\end{bmatrix} 
+
+$$
+
+
+其中第二行
+$$
+\dot{e}_d = \dot{e}_d + v dT \dot{e}_{\psi}
+$$
+可以变形为
+$$
+\dot{e}_d = v e_{\psi}
+$$
+
+其中第四行
+$$
+\dot{e}_{\psi} = \dot{e}_{\psi} 
+$$
+可以代入
+$$
+\dot{e}_{\psi} = \frac{v}{L} \tan \delta_f - \kappa_d v
+$$
+整理后结果同方式1。
 
 ### LQR问题求解
 
@@ -75,7 +248,7 @@ $$
 
 $$
 \mathbf{u}_{t} = - \mathbf{K} \mathbf{x}_{t}
-$$      
+$$
 
 其中，反馈增益矩阵 $\mathbf{K}$ 由以下方程计算得到：
 
@@ -103,4 +276,3 @@ $$
 $$
 \delta_{feedback} = \arctan \mathbf{u}_{t}
 $$
-
