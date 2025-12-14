@@ -332,3 +332,7 @@ $$
 $$
 \delta_{\mathrm{ff}}=\frac{L}{R}+K_{V}a_{y}-k_{3}\left[\frac{l_{r}}{R}-\frac{l_{f}}{2C_{\alpha r}}\times\frac{mv_{x}^{2}}{Rl}\right]
 $$
+
+
+
+[1] 王国业, 江发潮. 车辆动力学及控制 第2版[M]. （美）拉杰什·拉贾马尼（Rajesh Rajamani）, ed.. 北京：机械工业出版社, 2018[2021-05-20]. http://book.ucdrs.superlib.net/views/specific/2929/bookDetail.jsp?dxNumber=000017310311&d=563C7A67DB80CB14DAC6F0EF53F0BA86&fenlei=1904050101.
