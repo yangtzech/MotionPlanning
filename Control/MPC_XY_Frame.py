@@ -72,6 +72,10 @@ class MPC_XY_FrameController(ControllerBase):
             z_ref[2, i] = ref_path.cv[index]
             z_ref[3, i] = ref_path.cyaw[index]
 
+        # 展开航向角，避免在 ±pi 处跳变导致大误差
+        yaw_unwrapped = np.unwrap(np.r_[node.yaw, z_ref[3, :]])
+        z_ref[3, :] = yaw_unwrapped[1:]
+
         return z_ref
 
     def linear_mpc_control(self, z_ref, z0, a_old, delta_old, direct):
@@ -124,6 +128,10 @@ class MPC_XY_FrameController(ControllerBase):
             z_bar[1, i] = node.y
             z_bar[2, i] = node.v
             z_bar[3, i] = node.yaw
+
+        # 展开预测航向，使线性化点与参考航向同一支系，避免在 cost/线性化中出现 ±pi 跳变
+        yaw_unwrapped = np.unwrap(np.r_[z0[3], z_bar[3, :]])
+        z_bar[3, :] = yaw_unwrapped[1:]
 
         return z_bar
 

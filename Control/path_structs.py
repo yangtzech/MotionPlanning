@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-from utils import pi_2_pi
+from utils import angle_normalize, pi_2_pi
 
 
 class Node:
@@ -23,6 +23,7 @@ class Node:
         self.x += self.v * math.cos(self.yaw) * config.dt
         self.y += self.v * math.sin(self.yaw) * config.dt
         self.yaw += self.v / config.WB * math.tan(delta) * config.dt
+        self.yaw = angle_normalize(self.yaw, math.pi)
         self.direct = direct
         self.v += self.direct * a * config.dt
 
@@ -98,5 +99,5 @@ class PATH:
         # 计算横向误差，左正右负
         ed = np.dot(node_to_target_vec, target_normal_vec)
         # 计算航向误差，左正右负
-        e_phi = pi_2_pi(node.yaw - tyaw)
+        e_phi = angle_normalize(node.yaw - tyaw, math.pi)
         return ed, e_phi

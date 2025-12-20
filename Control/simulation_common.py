@@ -55,7 +55,7 @@ def run_simulation(
         zip(x, y, yaw, cur, direct)
     ):
         t = 0.0
-        maxTime = 100.0
+        maxTime = 10.0
         yaw_old = cyaw[0]
         x0, y0, yaw0, direct0 = cx[0], cy[0], cyaw[0], cdirect[0]
         node = Node(x=x0, y=y0, yaw=yaw0, v=0.1, direct=direct0, config=config)
@@ -63,8 +63,6 @@ def run_simulation(
         nodes.add(t, node)
         x_rec, y_rec = [], []
         lastIndex = len(cx) - 1
-
-        print(cdirect)
 
         cv = [config.MAX_SPEED * d for d in cdirect]
 

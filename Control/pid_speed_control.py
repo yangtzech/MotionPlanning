@@ -20,7 +20,7 @@ class PIDSpeedController(ControllerBase):
         yt = node.y + self.config.dc * math.sin(node.yaw)
         dist = math.hypot(xt - reference.cx[-1], yt - reference.cy[-1])
 
-        a = self.config.pid.Kp * (target_v - node.v * node.direct)
+        a = self.config.pid.Kp * (target_v - node.v) * node.direct
 
         if dist < self.config.dist_stop:
             if node.v > 3.0:
