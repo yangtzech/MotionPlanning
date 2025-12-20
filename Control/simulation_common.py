@@ -25,6 +25,7 @@ def run_simulation(
     lon_controller,
     draw_car_func=draw.draw_car,
     show_animation=True,
+    lat_lon_separate=True,
 ):
     """
     Run path tracking simulation.
@@ -54,7 +55,7 @@ def run_simulation(
         zip(x, y, yaw, cur, direct)
     ):
         t = 0.0
-        maxTime = 10.0
+        maxTime = 100.0
         yaw_old = cyaw[0]
         x0, y0, yaw0, direct0 = cx[0], cy[0], cyaw[0], cdirect[0]
         node = Node(x=x0, y=y0, yaw=yaw0, v=0.1, direct=direct0, config=config)
@@ -63,7 +64,9 @@ def run_simulation(
         x_rec, y_rec = [], []
         lastIndex = len(cx) - 1
 
-        cv = [config.MAX_SPEED] * len(cx)
+        print(cdirect)
+
+        cv = [config.MAX_SPEED * d for d in cdirect]
 
         ref_trajectory = PATH(cx, cy, cyaw, ccurv, cdirect, config, cv)
 
@@ -83,8 +86,11 @@ def run_simulation(
             if target_ind >= lastIndex:
                 break
 
-            lon_out = lon_controller.ComputeControlCommand(node, ref_trajectory)
-            acceleration = lon_out.acceleration
+            if lat_lon_separate:
+                lon_out = lon_controller.ComputeControlCommand(node, ref_trajectory)
+                acceleration = lon_out.acceleration
+            else:
+                acceleration = lat_output.acceleration
 
             t += config.dt
 
@@ -105,7 +111,7 @@ def run_simulation(
 
             # 记录分析数据
             v_actual.append(node.v * node.direct)
-            v_ref.append(ref_trajectory.cv[lon_out.target_ind])
+            v_ref.append(ref_trajectory.cv[target_ind])
             # 横向误差
             lat_error.append(ed)
             # 航向误差

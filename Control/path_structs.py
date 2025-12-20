@@ -59,7 +59,7 @@ class PATH:
         self.index_old = None
         self.config = config
         if cv is None:
-            self.cv = [config.MAX_SPEED] * len(cx)  # 默认全程最大速度
+            self.cv = [config.MAX_SPEED * d for d in cdirect]  # 默认全程最大速度
         else:
             self.cv = cv
 

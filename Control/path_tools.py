@@ -11,10 +11,11 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
+import CurvesGenerator.cubic_spline as cs
 import CurvesGenerator.reeds_shepp as rs
 
 
-def generate_path(s, max_steer=0.30, wheelbase=2.5):
+def generate_path(s, max_steer=0.30, wheelbase=2.5, curvesgenerator=rs):
     """
     divide paths into some sections, in each section, the direction is the same.
     :param s: list of (x, y, yaw_deg)
