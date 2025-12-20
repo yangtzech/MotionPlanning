@@ -1,10 +1,6 @@
 # 基于模型预测的速度与转向控制
 
-
 这是一个利用模型预测控制（MPC）进行路径跟踪的仿真示例。MPC 控制器基于线性化车辆模型同时调整速度与转向，求解采用优化建模工具 cvxpy。
-
-
-
 
 ## MPC 建模
 
@@ -34,31 +30,34 @@ $$
 
 - 线性化后的车辆模型：
 
-	$$z_{t+1} = A z_t + B u + C$$
-
+  $$
+  {t+1} = A z_t + B u + C
+  $$
 - 最大转向角速度：
 
-	$$|u_{t+1}-u_t| < du_{max}$$
-
+  $$
+  _{t+1}-u_t| < du_{max}
+  $$
 - 最大转向角：
 
-	$$|u_t| < u_{max}$$
-
+  $$
+  _t| < u_{max}
+  $$
 - 初始状态：
 
-	$$z_0 = z_{0,ob}$$
-
+  $$
+  0 = z_{0,ob}
+  $$
 - 速度上下限：
 
-	$$v_{min} < v_t < v_{max}$$
-
+  $$
+  {min} < v_t < v_{max}
+  $$
 - 输入上下限：
 
-	$$u_{min} < u_t < u_{max}$$
-
-对应实现可参见：
-
-PythonRobotics/model_predictive_speed_and_steer_control.py at f51a73f47cb922a12659f8ce2d544c347a2a8156 · AtsushiSakai/PythonRobotics <https://github.com/AtsushiSakai/PythonRobotics/blob/f51a73f47cb922a12659f8ce2d544c347a2a8156/PathTracking/model_predictive_speed_and_steer_control/model_predictive_speed_and_steer_control.py#L247-L301>
+  $$
+  {min} < u_t < u_{max}
+  $$
 
 ## 车辆模型线性化
 
@@ -170,12 +169,9 @@ C = (f(\bar{z}, \bar{u}) - A' \bar{z} - B' \bar{u}) dt
 \end{bmatrix}
 $$
 
-
 ## 参考资料
 
-- Vehicle Dynamics and Control | Rajesh Rajamani | Springer <http://www.springer.com/us/book/9781461414322>
-- MPC Book - MPC Lab @ UC-Berkeley <https://sites.google.com/berkeley.edu/mpc-lab/mpc-course-material>
-
-- 参考：Welcome to CVXPY 1.0 — CVXPY 1.0.6 documentation <http://www.cvxpy.org/>
-
-- Model predictive speed and steering control <https://github.com/AtsushiSakai/PythonRobotics/blob/master/docs/modules/6_path_tracking/model_predictive_speed_and_steering_control/model_predictive_speed_and_steering_control_main.rst>
+- Vehicle Dynamics and Control | Rajesh Rajamani | Springer [http://www.springer.com/us/book/9781461414322](http://www.springer.com/us/book/9781461414322)
+- MPC Book - MPC Lab @ UC-Berkeley [https://sites.google.com/berkeley.edu/mpc-lab/mpc-course-material](https://sites.google.com/berkeley.edu/mpc-lab/mpc-course-material)
+- 参考：Welcome to CVXPY 1.0 — CVXPY 1.0.6 documentation [http://www.cvxpy.org/](http://www.cvxpy.org/)
+- Model predictive speed and steering control [https://github.com/AtsushiSakai/PythonRobotics/blob/master/docs/modules/6_path_tracking/model_predictive_speed_and_steering_control/model_predictive_speed_and_steering_control_main.rst](https://github.com/AtsushiSakai/PythonRobotics/blob/master/docs/modules/6_path_tracking/model_predictive_speed_and_steering_control/model_predictive_speed_and_steering_control_main.rst)
