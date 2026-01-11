@@ -99,10 +99,10 @@ class MPCConfig:
     R = np.diag([0.01, 0.1])  # penalty for inputs
     Rd = np.diag([0.01, 0.1])  # penalty for change of inputs
 
-    max_iteration = 10  # max iteration
+    max_iteration = 5  # max iteration
 
     N_IND = 10  # search index number
-    d_dist = 0.2  # dist step
+    d_dist = 0.3  # dist step
     du_res = 0.1  # threshold for stopping iteration
 
 

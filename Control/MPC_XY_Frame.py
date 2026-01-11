@@ -46,7 +46,7 @@ class MPC_XY_FrameController(ControllerBase):
             target_ind=target_ind,
             lat_error=ed,
             yaw_error=e_phi,
-            acceleration=a_exc * node.direct,
+            acceleration=a_exc,
         )
 
     def calc_ref_trajectory(self, node: Node, ref_path: PATH, index: int):
@@ -86,7 +86,7 @@ class MPC_XY_FrameController(ControllerBase):
 
         x, y, yaw, v = None, None, None, None
 
-        for k in range(config.mpc.iter_max):
+        for k in range(config.max_iteration):
             print("a_old:", a_old)
             print("delta_old:", delta_old)
 
@@ -170,7 +170,7 @@ class MPC_XY_FrameController(ControllerBase):
                 cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], config.mpc.Rd)
                 constrains += [
                     cvxpy.abs(u[1, t + 1] - u[1, t])
-                    <= config.mpc.steer_change_max * config.mpc.dt
+                    <= config.MAX_STEER_CHANGE * config.dt
                 ]
 
         cost += cvxpy.quad_form(
@@ -178,10 +178,10 @@ class MPC_XY_FrameController(ControllerBase):
         )
 
         constrains += [z[:, 0] == z0]
-        constrains += [z[2, :] <= config.mpc.speed_max]
-        constrains += [z[2, :] >= config.mpc.speed_min]
-        constrains += [cvxpy.abs(u[0, :]) <= config.mpc.acceleration_max]
-        constrains += [cvxpy.abs(u[1, :]) <= config.mpc.steer_max]
+        constrains += [z[2, :] <= config.MAX_SPEED]
+        constrains += [z[2, :] >= config.MIN_SPEED]
+        constrains += [cvxpy.abs(u[0, :]) <= config.MAX_ACCELERATION]
+        constrains += [cvxpy.abs(u[1, :]) <= config.MAX_STEER]
 
         prob = cvxpy.Problem(cvxpy.Minimize(cost), constrains)
         prob.solve(solver=cvxpy.OSQP)
@@ -208,14 +208,14 @@ class MPC_XY_FrameController(ControllerBase):
         :param delta: steering angle: delta_bar
         :return: A, B, C
         """
-        P = self.config.mpc
+        config = self.config
 
         A = np.array(
             [
-                [1.0, 0.0, P.dt * math.cos(phi), -P.dt * v * math.sin(phi)],
-                [0.0, 1.0, P.dt * math.sin(phi), P.dt * v * math.cos(phi)],
+                [1.0, 0.0, config.dt * math.cos(phi), -config.dt * v * math.sin(phi)],
+                [0.0, 1.0, config.dt * math.sin(phi), config.dt * v * math.cos(phi)],
                 [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, P.dt * math.tan(delta) / P.WB, 1.0],
+                [0.0, 0.0, config.dt * math.tan(delta) / config.WB, 1.0],
             ]
         )
 
@@ -223,17 +223,17 @@ class MPC_XY_FrameController(ControllerBase):
             [
                 [0.0, 0.0],
                 [0.0, 0.0],
-                [P.dt, 0.0],
-                [0.0, P.dt * v / (P.WB * math.cos(delta) ** 2)],
+                [config.dt, 0.0],
+                [0.0, config.dt * v / (config.WB * math.cos(delta) ** 2)],
             ]
         )
 
         C = np.array(
             [
-                P.dt * v * math.sin(phi) * phi,
-                -P.dt * v * math.cos(phi) * phi,
+                config.dt * v * math.sin(phi) * phi,
+                -config.dt * v * math.cos(phi) * phi,
                 0.0,
-                -P.dt * v * delta / (P.WB * math.cos(delta) ** 2),
+                -config.dt * v * delta / (config.WB * math.cos(delta) ** 2),
             ]
         )
 
