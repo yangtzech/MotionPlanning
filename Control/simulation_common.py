@@ -55,7 +55,7 @@ def run_simulation(
         zip(x, y, yaw, cur, direct)
     ):
         t = 0.0
-        maxTime = 10.0
+        maxTime = config.time_max
         yaw_old = cyaw[0]
         x0, y0, yaw0, direct0 = cx[0], cy[0], cyaw[0], cdirect[0]
         node = Node(x=x0, y=y0, yaw=yaw0, v=0.1, direct=direct0, config=config)
@@ -64,7 +64,7 @@ def run_simulation(
         x_rec, y_rec = [], []
         lastIndex = len(cx) - 1
 
-        cv = [config.MAX_SPEED * d for d in cdirect]
+        cv = [config.target_speed * d for d in cdirect]
 
         ref_trajectory = PATH(cx, cy, cyaw, ccurv, cdirect, config, cv)
 
@@ -91,8 +91,11 @@ def run_simulation(
                 acceleration = lat_output.acceleration
 
             t += config.dt
-
+            print("acceleration:", acceleration)
+            print("delta:", delta)
+            print("cdirect:", cdirect[0])
             node.update(acceleration, delta, cdirect[0], ed, e_phi)
+            print("node:", node.x, node.y, node.yaw, node.v)
             nodes.add(t, node)
             x_rec.append(node.x)
             y_rec.append(node.y)

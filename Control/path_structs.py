@@ -25,7 +25,7 @@ class Node:
         self.yaw += self.v / config.WB * math.tan(delta) * config.dt
         self.yaw = angle_normalize(self.yaw, math.pi)
         self.direct = direct
-        self.v += self.direct * a * config.dt
+        self.v += a * config.dt
 
         self.ed = ed
         self.e_phi = e_phi

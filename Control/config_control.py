@@ -6,7 +6,8 @@ class BaseConfig:
     Ld = 2.6  # look ahead distance
     kf = 0.1  # look forward gain
     dt = 0.1  # T step
-    dist_stop = 0.7  # stop distance
+    dist_stop = 0.7  # stop distance: stop permitted when dist to goal < dist_stop
+    # speed_stop = 0.5 / 3.6  # stop permitted when speed < speed_stop
     dc = 0.0
 
     # vehicle config
@@ -17,9 +18,13 @@ class BaseConfig:
     WB = 2.5  # [m] Wheel base
     TR = 0.44  # [m] Tyre radius
     TW = 0.7  # [m] Tyre width
-    MAX_STEER = np.deg2rad(20)
-    MAX_ACCELERATION = 5.0
-    MAX_SPEED = 30.0 / 3.6  # [m/s]
+    MAX_STEER = np.deg2rad(45.0)  # [rad] max steering angle
+    MAX_STEER_CHANGE = np.deg2rad(30.0)  # [rad/s] max steering speed
+    MAX_ACCELERATION = 1.0  # [m/s2] maximum acceleration
+    MAX_SPEED = 55.0 / 3.6  # [m/s] maximum speed
+    MIN_SPEED = -20.0 / 3.6  # [m/s] minimum speed
+
+    target_speed = 10.0 / 3.6  # target speed
 
     # Vehicle config
     wheelbase = 2.33  # wheel base: front to rear axle [m]
@@ -42,6 +47,7 @@ class BaseConfig:
     ts = 0.10  # [s]
     max_iteration = 150
     eps = 0.01
+    time_max = 500.0  # max simulation time
 
     matrix_q = [1.0, 0.0, 1.0, 0.0]
     matrix_r = [1.0]
@@ -93,30 +99,17 @@ class MPCConfig:
     R = np.diag([0.01, 0.1])  # penalty for inputs
     Rd = np.diag([0.01, 0.1])  # penalty for change of inputs
 
-    dist_stop = 1.5  # stop permitted when dist to goal < dist_stop
-    speed_stop = 0.5 / 3.6  # stop permitted when speed < speed_stop
-    time_max = 500.0  # max simulation time
-    iter_max = 5  # max iteration
-    target_speed = 10.0 / 3.6  # target speed
+    max_iteration = 10  # max iteration
+
     N_IND = 10  # search index number
-    dt = 0.2  # time step
-    d_dist = 0.3  # dist step
+    d_dist = 0.2  # dist step
     du_res = 0.1  # threshold for stopping iteration
 
-    # vehicle config
-    RF = 3.3  # [m] distance from rear to vehicle front end of vehicle
-    RB = 0.8  # [m] distance from rear to vehicle back end of vehicle
-    W = 2.4  # [m] width of vehicle
-    WD = 0.7 * W  # [m] distance between left-right wheels
-    WB = 2.5  # [m] Wheel base
-    TR = 0.44  # [m] Tyre radius
-    TW = 0.7  # [m] Tyre width
 
-    steer_max = np.deg2rad(45.0)  # max steering angle [rad]
-    steer_change_max = np.deg2rad(30.0)  # maximum steering speed [rad/s]
-    speed_max = 55.0 / 3.6  # maximum speed [m/s]
-    speed_min = -20.0 / 3.6  # minimum speed [m/s]
-    acceleration_max = 1.0  # maximum acceleration [m/s2]
+class MPC_Frenet_FrameConfig(MPCConfig):
+    NZ = 5  # state vector: z = [e, e_dot, theta_e, theta_e_dot, v]
+    Q = np.diag([1.0, 1.0, 1.0, 1.0, 1.0])  # penalty for states
+    Qf = np.diag([1.0, 1.0, 1.0, 1.0, 1.0])  # penalty for end state
 
 
 class Config(BaseConfig):
@@ -126,3 +119,4 @@ class Config(BaseConfig):
     rear_wheel_feedback = RearWheelFeedbackConfig()
     lqr = LQRConfig()
     mpc = MPCConfig()
+    mpc_frenet = MPC_Frenet_FrameConfig()
