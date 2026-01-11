@@ -16,6 +16,13 @@ class Node:
         self.ed = 0.0
         self.e_phi = 0.0
 
+    def __copy__(self):
+        # 自定义浅拷贝，保留数值状态与配置引用
+        new = Node(self.x, self.y, self.yaw, self.v, self.direct, self.config)
+        new.ed = self.ed
+        new.e_phi = self.e_phi
+        return new
+
     def update(self, a, delta, direct, ed, e_phi):
         config = self.config
         # delta = np.clip(delta, -self.config.MAX_STEER, self.config.MAX_STEER)

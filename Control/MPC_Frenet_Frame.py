@@ -3,6 +3,7 @@ Stanley
 author: huiming zhou
 """
 
+import copy
 import math
 
 import cvxpy
@@ -54,7 +55,7 @@ class MPC_Frenet_FrameController(ControllerBase):
             target_ind=target_ind,
             lat_error=ed,
             yaw_error=e_phi,
-            acceleration=a_exc * node.direct,
+            acceleration=a_exc,
         )
 
     def calc_ref_trajectory(self, node: Node, ref_path: PATH, index: int):
@@ -149,19 +150,24 @@ class MPC_Frenet_FrameController(ControllerBase):
         z_bar = z_ref * 0.0
         for i in range(P.NZ):
             z_bar[i, 0] = z0[i]
+        # 使用自定义浅拷贝，避免重建并丢失额外状态
+        node0 = copy.copy(node)
+        # 预测使用传入的行驶方向参数，确保一致
+        node0.direct = direct
 
         for ai, di, i in zip(a, delta, range(1, P.T + 1)):
-            print("original node:", node.x, node.y, node.yaw, node.v)
+            print("original node copy:", node0.x, node0.y, node0.yaw, node0.v)
             print("apply ai, di, direct:", ai, di, direct)
-            node.update(ai, di, direct, 0.0, 0.0)
-            print("Predicted node:", node.x, node.y, node.yaw, node.v)
-            target_ind = ref_path.calc_nearest_ind(node)
-            ed, e_phi = ref_path.cal_ed_e_phi(node, target_ind)
+            # 使用副本节点进行状态预测，避免修改原始 node
+            node0.update(ai, di, direct, 0.0, 0.0)
+            print("Predicted node copy:", node0.x, node0.y, node0.yaw, node0.v)
+            target_ind = ref_path.calc_nearest_ind(node0)
+            ed, e_phi = ref_path.cal_ed_e_phi(node0, target_ind)
             z_bar[0, i] = ed
             z_bar[1, i] = 0.0
             z_bar[2, i] = e_phi
             z_bar[3, i] = 0.0
-            z_bar[4, i] = node.v
+            z_bar[4, i] = node0.v
 
         return z_bar
 
