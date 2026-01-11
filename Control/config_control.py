@@ -18,7 +18,7 @@ class BaseConfig:
     WB = 2.5  # [m] Wheel base
     TR = 0.44  # [m] Tyre radius
     TW = 0.7  # [m] Tyre width
-    MAX_STEER = np.deg2rad(45.0)  # [rad] max steering angle
+    MAX_STEER = np.deg2rad(20.0)  # [rad] max steering angle
     MAX_STEER_CHANGE = np.deg2rad(30.0)  # [rad/s] max steering speed
     MAX_ACCELERATION = 1.0  # [m/s2] maximum acceleration
     MAX_SPEED = 55.0 / 3.6  # [m/s] maximum speed
