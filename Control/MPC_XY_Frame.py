@@ -9,6 +9,7 @@ import cvxpy
 import numpy as np
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
+from logger import log_controller_debug, log_controller_error
 from path_structs import PATH, Node
 from utils import process_wheel_angle
 
@@ -87,8 +88,8 @@ class MPC_XY_FrameController(ControllerBase):
         x, y, yaw, v = None, None, None, None
 
         for k in range(config.max_iteration):
-            print("a_old:", a_old)
-            print("delta_old:", delta_old)
+            log_controller_debug(f"a_old: {a_old}")
+            log_controller_debug(f"delta_old: {delta_old}")
 
             z_bar = self.predict_states_in_T_step(z0, a_old, delta_old, z_ref, direct)
             a_rec, delta_rec = a_old[:], delta_old[:]
@@ -145,9 +146,9 @@ class MPC_XY_FrameController(ControllerBase):
         :return: optimal acceleration and steering strategy
         """
 
-        print("z0:", z0)
-        print("z_ref:", z_ref)
-        print("z_bar:", z_bar)
+        log_controller_debug(f"z0: {z0}")
+        log_controller_debug(f"z_ref: {z_ref}")
+        log_controller_debug(f"z_bar: {z_bar}")
         config = self.config
 
         z = cvxpy.Variable((config.mpc.NZ, config.mpc.T + 1))
@@ -196,7 +197,7 @@ class MPC_XY_FrameController(ControllerBase):
             a = u.value[0, :]
             delta = u.value[1, :]
         else:
-            print("Cannot solve linear mpc!")
+            log_controller_error("Cannot solve linear mpc!")
 
         return a, delta, x, y, yaw, v
 

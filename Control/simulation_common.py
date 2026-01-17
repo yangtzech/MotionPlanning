@@ -91,11 +91,7 @@ def run_simulation(
                 acceleration = lat_output.acceleration
 
             t += config.dt
-            print("acceleration:", acceleration)
-            print("delta:", delta)
-            print("cdirect:", cdirect[0])
             node.update(acceleration, delta, cdirect[0], ed, e_phi)
-            print("node:", node.x, node.y, node.yaw, node.v)
             nodes.add(t, node)
             x_rec.append(node.x)
             y_rec.append(node.y)

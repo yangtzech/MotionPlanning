@@ -3,6 +3,7 @@
 import argparse
 
 from config_control import Config
+from logger import log_controller_info
 from pid_speed_control import PIDSpeedController
 from simulation_common import run_simulation
 from simulation_runner_configurable import plot_tracking_results
@@ -94,7 +95,7 @@ def run_comparison_simulation(controller_names, config_override=None):
     """运行多个控制器的对比仿真"""
     results = []
     for controller_name in controller_names:
-        print(f"Running simulation for {controller_name}...")
+        log_controller_info(f"Running simulation for {controller_name}...")
         result = run_single_simulation(controller_name, config_override)
         results.append(result)
     return results

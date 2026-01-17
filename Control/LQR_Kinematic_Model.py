@@ -6,6 +6,7 @@ author: huiming zhou
 import numpy as np
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
+from logger import log_controller_warning
 from path_structs import PATH, Node
 from utils import process_wheel_angle
 
@@ -134,10 +135,8 @@ class LQRKinematicController(ControllerBase):
             P = P_next
 
         if num_iteration >= max_num_iteration:
-            print(
-                "LQR solver cannot converge to a solution",
-                "last consecutive result diff is: ",
-                diff,
+            log_controller_warning(
+                f"LQR solver cannot converge to a solution, last consecutive result diff is: {diff}"
             )
 
         K = np.linalg.inv(BT @ P @ B + R) @ (BT @ P @ A + MT)

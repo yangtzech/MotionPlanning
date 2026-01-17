@@ -35,6 +35,7 @@ dependencies = [
     "jupyter-client==8.6.3",
     "jupyter-core==5.9.1",
     "kiwisolver>=1.4.9",
+    "loguru>=0.7.0",
     "loro==1.8.2",
     "marimo==0.17.8",
     "markdown==3.10",

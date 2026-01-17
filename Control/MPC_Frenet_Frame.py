@@ -10,6 +10,7 @@ import cvxpy
 import numpy as np
 from config_control import Config
 from controller_base import ControlCommand, ControllerBase
+from logger import log_controller_debug, log_controller_error
 from path_structs import PATH, Node
 from utils import process_wheel_angle
 
@@ -42,8 +43,8 @@ class MPC_Frenet_FrameController(ControllerBase):
                 ref_path=ref_path,
             )
         )
-        print("a_opt:", self.a_opt)
-        print("delta_opt:", self.delta_opt)
+        log_controller_debug(f"a_opt: {self.a_opt}")
+        log_controller_debug(f"delta_opt: {self.delta_opt}")
 
         if self.delta_opt is not None:
             delta_exc, a_exc = self.delta_opt[0], self.a_opt[0]
@@ -114,8 +115,8 @@ class MPC_Frenet_FrameController(ControllerBase):
         x, y, yaw, v = None, None, None, None
 
         for k in range(config.mpc.max_iteration):
-            print("a_old:", a_old)
-            print("delta_old:", delta_old)
+            log_controller_debug(f"a_old: {a_old}")
+            log_controller_debug(f"delta_old: {delta_old}")
 
             z_bar = self.predict_states_in_T_step(
                 node, z0, a_old, delta_old, z_ref, direct, ref_path
@@ -156,11 +157,15 @@ class MPC_Frenet_FrameController(ControllerBase):
         node0.direct = direct
 
         for ai, di, i in zip(a, delta, range(1, P.T + 1)):
-            print("original node copy:", node0.x, node0.y, node0.yaw, node0.v)
-            print("apply ai, di, direct:", ai, di, direct)
+            log_controller_debug(
+                f"original node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}"
+            )
+            log_controller_debug(f"apply ai, di, direct: {ai}, {di}, {direct}")
             # 使用副本节点进行状态预测，避免修改原始 node
             node0.update(ai, di, direct, 0.0, 0.0)
-            print("Predicted node copy:", node0.x, node0.y, node0.yaw, node0.v)
+            log_controller_debug(
+                f"Predicted node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}"
+            )
             target_ind = ref_path.calc_nearest_ind(node0)
             ed, e_phi = ref_path.cal_ed_e_phi(node0, target_ind)
             z_bar[0, i] = ed
@@ -181,9 +186,9 @@ class MPC_Frenet_FrameController(ControllerBase):
         :return: optimal acceleration and steering strategy
         """
 
-        print("z0:", z0)
-        print("z_ref:", z_ref)
-        print("z_bar:", z_bar)
+        log_controller_debug(f"z0: {z0}")
+        log_controller_debug(f"z_ref: {z_ref}")
+        log_controller_debug(f"z_bar: {z_bar}")
         config = self.config
 
         z = cvxpy.Variable((config.mpc_frenet.NZ, config.mpc_frenet.T + 1))
@@ -226,8 +231,8 @@ class MPC_Frenet_FrameController(ControllerBase):
             a = u.value[0, :]
             delta = u.value[1, :]
         else:
-            print("solve states:", prob.status)
-            print("Cannot solve linear mpc!")
+            log_controller_debug(f"solve states: {prob.status}")
+            log_controller_error("Cannot solve linear mpc!")
 
         return a, delta, x, y, yaw, v
 
