@@ -44,7 +44,9 @@ def is_mpc_controller(controller_name):
     return controller_name in mpc_controllers
 
 
-def run_single_simulation(controller_name, config_override=None):
+def run_single_simulation(
+    controller_name, config_override=None, show_realtime_performance=False
+):
     """运行单个控制器的仿真"""
     config = Config()
 
@@ -75,6 +77,8 @@ def run_single_simulation(controller_name, config_override=None):
             states,
             controller,
             lon_controller=None,
+            show_realtime_performance=show_realtime_performance,
+            controller_name=controller_name,
             lat_lon_separate=False,
         )
     else:
@@ -85,6 +89,8 @@ def run_single_simulation(controller_name, config_override=None):
             states,
             controller,
             lon_controller,
+            show_realtime_performance=show_realtime_performance,
+            controller_name=controller_name,
         )
 
     result["controller"] = controller_name

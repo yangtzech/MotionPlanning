@@ -6,6 +6,8 @@ from path_tools import generate_path
 from utils import pi_2_pi
 
 import Control.draw as draw
+from Control.animation_updater import get_animator
+from Control.performance_monitor import get_performance_monitor
 
 is_paused = False
 
@@ -25,6 +27,8 @@ def run_simulation(
     lon_controller,
     draw_car_func=draw.draw_car,
     show_animation=True,
+    show_realtime_performance=False,
+    controller_name="Controller",
     lat_lon_separate=True,
 ):
     """
@@ -36,6 +40,9 @@ def run_simulation(
         lon_controller: longitudinal controller instance (必须有 ComputeControlCommand 方法)
         draw_car_func: function for drawing car (optional)
         show_animation: whether to show animation
+        show_realtime_performance: whether to show real-time performance graphs (支持多段轨迹显示)
+        controller_name: name of the controller for performance monitor
+        lat_lon_separate: whether to use separate lateral and longitudinal controllers
     Returns:
         dict with all_time, all_v_actual, all_v_ref, all_lat_error, all_yaw_error
     """
@@ -50,7 +57,13 @@ def run_simulation(
     all_yaw_error = []
     seg_time_offset = 0.0
 
-    event_bound = False
+    # 初始化动画和性能监控
+    animator = None
+    perf_monitor = None
+
+    if show_realtime_performance:
+        perf_monitor = get_performance_monitor(controller_name)
+
     for seg_id, (cx, cy, cyaw, ccurv, cdirect) in enumerate(
         zip(x, y, yaw, cur, direct)
     ):
@@ -74,6 +87,11 @@ def run_simulation(
         lat_error = []
         yaw_error = []
         time_list = []
+
+        # 初始化动画更新器
+        if show_animation and animator is None:
+            animator = get_animator(path_x, path_y, config)
+            event_bound = True
 
         while t <= maxTime:
             lat_output = lat_controller.ComputeControlCommand(node, ref_trajectory)
@@ -107,40 +125,67 @@ def run_simulation(
             yaw_old = node.yaw
 
             # 记录分析数据
-            v_actual.append(node.v * node.direct)
-            v_ref.append(ref_trajectory.cv[target_ind])
+            v_actual_value = node.v * node.direct
+            v_actual.append(v_actual_value)
+            v_ref_value = ref_trajectory.cv[target_ind]
+            v_ref.append(v_ref_value)
             # 横向误差
             lat_error.append(ed)
             # 航向误差
             yaw_error.append(e_phi)
             time_list.append(t)
 
-            # animation
-            if show_animation:
-                plt.cla()
-                plt.plot(path_x, path_y, color="gray", linewidth=2)
-                plt.plot(x_rec, y_rec, color="darkviolet", linewidth=2)
-                plt.plot(cx[target_ind], cy[target_ind], ".r")
-                draw_car_func(node.x, node.y, yaw_old, steer, config)
+            # 实时性能监控（支持多段轨迹显示）
+            if show_realtime_performance and perf_monitor:
+                should_continue = perf_monitor.update_data(
+                    t + seg_time_offset,  # 使用段内时间
+                    v_actual_value * 3.6,  # 转换为 km/h
+                    v_ref_value * 3.6,  # 转换为 km/h
+                    ed,
+                    e_phi,
+                )
+                if not should_continue:
+                    break  # 如果性能监控器指示停止，则退出循环
 
-                plt.axis("equal")
-                plt.title("v=" + str(node.v * 3.6)[:4] + "km/h")
-                if not event_bound:
-                    plt.gcf().canvas.mpl_connect("key_release_event", on_key)
-                    event_bound = True
+            # animation - 使用新的动画更新器
+            if show_animation:
+                should_continue = animator.update_frame(node, cx, cy, target_ind, steer)
+                if not should_continue:
+                    break  # 如果动画更新器指示停止，则退出循环
                 plt.pause(0.001)
-                if is_paused:
-                    while is_paused:
+                if animator.is_paused:
+                    while animator.is_paused:
                         plt.pause(0.1)
+                if animator.should_exit:
+                    print("Simulation stopped by user.")
+                    return {
+                        "all_time": all_time,
+                        "all_v_actual": all_v_actual,
+                        "all_v_ref": all_v_ref,
+                        "all_lat_error": all_lat_error,
+                        "all_yaw_error": all_yaw_error,
+                    }
 
         # 合并分析数据
         all_time.append([t + seg_time_offset for t in time_list])
-        all_v_actual.append([v * 3.6 for v in v_actual])
-        all_v_ref.append([v * 3.6 for v in v_ref])
+        all_v_actual.append([v * 3.6 for v in v_actual])  # 转换为 km/h
+        all_v_ref.append([v * 3.6 for v in v_ref])  # 转换为 km/h
         all_lat_error.append(lat_error)
         all_yaw_error.append(yaw_error)
         if time_list:
             seg_time_offset += time_list[-1]
+
+        # 实时性能监控：完成当前段
+        if show_realtime_performance and perf_monitor:
+            perf_monitor.finalize_current_segment()
+
+    # 如果动画器存在，关闭它
+    if show_animation and animator is not None:
+        animator.close()
+
+    # 如果性能监控器存在，关闭它
+    if show_realtime_performance and perf_monitor is not None:
+        perf_monitor.close()
 
     # 返回仿真数据，绘图由外部处理
     return {
