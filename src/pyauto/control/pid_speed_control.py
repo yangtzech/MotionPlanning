@@ -1,6 +1,6 @@
 import math
 
-from .config_control import Config
+from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
 

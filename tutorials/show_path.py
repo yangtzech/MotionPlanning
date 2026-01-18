@@ -2,7 +2,7 @@ import math
 
 import matplotlib.pyplot as plt
 
-from pyauto.control.config_control import Config
+from pyauto.config.config import Config
 from pyauto.control.path_tools import generate_path
 
 config = Config()

@@ -5,7 +5,7 @@ import argparse
 from simulation_runner_configurable import plot_tracking_results
 
 from pyauto.common.logger import log_controller_info
-from pyauto.control.config_control import Config
+from pyauto.config.config import Config
 from pyauto.control.pid_speed_control import PIDSpeedController
 from pyauto.simulation.simulation_common import run_simulation
 

@@ -7,7 +7,7 @@ import numpy as np
 
 from ..common.logger import log_controller_warning
 from ..common.utils import process_wheel_angle
-from .config_control import Config
+from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
 

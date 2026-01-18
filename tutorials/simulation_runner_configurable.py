@@ -2,7 +2,7 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-from pyauto.control.config_control import Config
+from pyauto.config.config import Config
 from pyauto.control.pid_speed_control import PIDSpeedController
 from pyauto.control.Pure_Pursuit import PurePursuitController
 from pyauto.control.Rear_Wheel_Feedback import RearWheelFeedbackController

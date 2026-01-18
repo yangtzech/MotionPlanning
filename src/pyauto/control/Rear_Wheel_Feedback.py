@@ -6,7 +6,7 @@ author: huiming zhou
 import math
 
 from ..common.utils import process_wheel_angle
-from .config_control import Config
+from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
 
