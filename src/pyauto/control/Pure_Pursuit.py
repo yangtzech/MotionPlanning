@@ -23,6 +23,10 @@ class PurePursuitController(ControllerBase):
         alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
         delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
         ed, e_phi = ref_path.cal_ed_e_phi(node, ind)
+
+        # 限制转向角范围
+        delta = self.ClampSteeringAngle(delta)
+
         return ControlCommand(
             steer=delta,
             target_ind=ind,

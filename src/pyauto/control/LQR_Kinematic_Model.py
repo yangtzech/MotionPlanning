@@ -6,7 +6,6 @@ author: huiming zhou
 import numpy as np
 
 from ..common.logger import log_controller_warning
-from ..common.utils import process_wheel_angle
 from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
@@ -51,11 +50,7 @@ class LQRKinematicController(ControllerBase):
         steering_angle_forward = self.ComputeFeedForward(ref_path.ccurv[target_ind])
 
         # 后处理
-        delta = process_wheel_angle(
-            steering_angle_feedback + steering_angle_forward,
-            -self.config.MAX_STEER,
-            self.config.MAX_STEER,
-        )
+        delta = self.ClampSteeringAngle(steering_angle_feedback + steering_angle_forward)
 
         return ControlCommand(
             steer=delta,

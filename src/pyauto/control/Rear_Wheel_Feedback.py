@@ -5,7 +5,6 @@ author: huiming zhou
 
 import math
 
-from ..common.utils import process_wheel_angle
 from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
@@ -38,7 +37,7 @@ class RearWheelFeedbackController(ControllerBase):
 
         delta = math.atan2(self.config.WB * yaw_rate, vr)
         # 后处理
-        delta = process_wheel_angle(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
+        delta = self.ClampSteeringAngle(delta)
         return ControlCommand(
             steer=delta,
             target_ind=target_ind,

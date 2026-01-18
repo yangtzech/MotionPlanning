@@ -7,7 +7,6 @@ import math
 
 import numpy as np
 
-from ..common.utils import process_wheel_angle
 from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
@@ -30,7 +29,7 @@ class StanleyController(ControllerBase):
         delta = -e_phi * np.sign(node.v) + math.atan2(-self.config.stanley.k * ed, abs(node.v))
 
         # 后处理
-        delta = process_wheel_angle(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
+        delta = self.ClampSteeringAngle(delta)
 
         return ControlCommand(
             steer=delta,

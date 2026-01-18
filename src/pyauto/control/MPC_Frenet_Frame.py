@@ -9,7 +9,6 @@ import cvxpy
 import numpy as np
 
 from ..common.logger import log_controller_debug, log_controller_error
-from ..common.utils import process_wheel_angle
 from ..config.config import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
@@ -48,7 +47,7 @@ class MPC_Frenet_FrameController(ControllerBase):
             delta_exc, a_exc = self.delta_opt[0], self.a_opt[0]
 
         return ControlCommand(
-            steer=process_wheel_angle(delta_exc, -self.config.MAX_STEER, self.config.MAX_STEER),
+            steer=self.ClampSteeringAngle(delta_exc),
             target_ind=target_ind,
             lat_error=ed,
             yaw_error=e_phi,
