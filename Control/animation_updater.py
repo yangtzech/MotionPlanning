@@ -33,17 +33,11 @@ class AdvancedAnimationUpdater:
         self.fig, self.ax = plt.subplots(figsize=(10, 8))
 
         # 绘制静态元素（参考路径）
-        self.ax.plot(
-            self.path_x, self.path_y, color="gray", linewidth=2, label="Reference Path"
-        )
+        self.ax.plot(self.path_x, self.path_y, color="gray", linewidth=2, label="Reference Path")
 
         # 创建可更新的线条对象
-        (self.traj_line,) = self.ax.plot(
-            [], [], color="darkviolet", linewidth=2, label="Vehicle Trajectory"
-        )
-        (self.target_point,) = self.ax.plot(
-            [], [], ".r", markersize=8, label="Target Point"
-        )
+        (self.traj_line,) = self.ax.plot([], [], color="darkviolet", linewidth=2, label="Vehicle Trajectory")
+        (self.target_point,) = self.ax.plot([], [], ".r", markersize=8, label="Target Point")
 
         # 车辆图形对象列表（用于删除之前的车辆）
         self.vehicle_artists = []
@@ -172,9 +166,7 @@ class AdvancedAnimationUpdater:
 
         Rot1 = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
 
-        Rot2 = np.array(
-            [[np.cos(steer), np.sin(steer)], [-np.sin(steer), np.cos(steer)]]
-        )
+        Rot2 = np.array([[np.cos(steer), np.sin(steer)], [-np.sin(steer), np.cos(steer)]])
 
         frWheel = np.dot(Rot2, frWheel)
         flWheel = np.dot(Rot2, flWheel)
@@ -221,9 +213,7 @@ class AdvancedAnimationUpdater:
         self.ax.add_patch(arrow)
 
         # 将新绘制的车辆部分添加到列表中，以便下次清除
-        self.vehicle_artists.extend(
-            [car_line, fr_line, fl_line, rr_line, rl_line, arrow]
-        )
+        self.vehicle_artists.extend([car_line, fr_line, fl_line, rr_line, rl_line, arrow])
 
     def clear_trajectory(self):
         """清空轨迹记录"""

@@ -13,11 +13,7 @@ def calc_curvature_point(s1, s2, s3):
     Y = np.array([[s1[1]], [s2[1]], [s3[1]]])
     A = np.linalg.solve(M, X)
     B = np.linalg.solve(M, Y)
-    k = (
-        2
-        * (A[2][0] * B[1][0] - A[1][0] * B[2][0])
-        / (A[1][0] ** 2 + B[1][0] ** 2) ** (3 / 2)
-    )
+    k = 2 * (A[2][0] * B[1][0] - A[1][0] * B[2][0]) / (A[1][0] ** 2 + B[1][0] ** 2) ** (3 / 2)
 
     return k
 
@@ -33,11 +29,7 @@ def calc_curvature(x, y):
         Y = np.array([[y[i]], [y[i + 1]], [y[i + 2]]])
         A = np.linalg.solve(M, X)
         B = np.linalg.solve(M, Y)
-        k = (
-            2
-            * (A[2][0] * B[1][0] - A[1][0] * B[2][0])
-            / (A[1][0] ** 2 + B[1][0] ** 2) ** (3 / 2)
-        )
+        k = 2 * (A[2][0] * B[1][0] - A[1][0] * B[2][0]) / (A[1][0] ** 2 + B[1][0] ** 2) ** (3 / 2)
         K.append(k)
     K.append(0.0)
     K.append(0.0)

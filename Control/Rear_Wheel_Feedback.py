@@ -38,9 +38,7 @@ class RearWheelFeedbackController(ControllerBase):
 
         delta = math.atan2(self.config.WB * yaw_rate, vr)
         # 后处理
-        delta = process_wheel_angle(
-            delta, -self.config.MAX_STEER, self.config.MAX_STEER
-        )
+        delta = process_wheel_angle(delta, -self.config.MAX_STEER, self.config.MAX_STEER)
         return ControlCommand(
             steer=delta,
             target_ind=target_ind,

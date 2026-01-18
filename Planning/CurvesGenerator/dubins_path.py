@@ -3,11 +3,12 @@ Dubins Path
 """
 
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-from CurvesGenerator import draw
+from Planning.CurvesGenerator import draw
 
 
 # class for PATH element
@@ -42,7 +43,7 @@ def LSL(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    p_lsl = 2 + dist ** 2 - 2 * cos_a_b + 2 * dist * (sin_a - sin_b)
+    p_lsl = 2 + dist**2 - 2 * cos_a_b + 2 * dist * (sin_a - sin_b)
 
     if p_lsl < 0:
         return None, None, None, ["WB", "S", "WB"]
@@ -63,7 +64,7 @@ def RSR(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    p_rsr = 2 + dist ** 2 - 2 * cos_a_b + 2 * dist * (sin_b - sin_a)
+    p_rsr = 2 + dist**2 - 2 * cos_a_b + 2 * dist * (sin_b - sin_a)
 
     if p_rsr < 0:
         return None, None, None, ["R", "S", "R"]
@@ -84,7 +85,7 @@ def LSR(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    p_lsr = -2 + dist ** 2 + 2 * cos_a_b + 2 * dist * (sin_a + sin_b)
+    p_lsr = -2 + dist**2 + 2 * cos_a_b + 2 * dist * (sin_a + sin_b)
 
     if p_lsr < 0:
         return None, None, None, ["WB", "S", "R"]
@@ -105,7 +106,7 @@ def RSL(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    p_rsl = -2 + dist ** 2 + 2 * cos_a_b - 2 * dist * (sin_a + sin_b)
+    p_rsl = -2 + dist**2 + 2 * cos_a_b - 2 * dist * (sin_a + sin_b)
 
     if p_rsl < 0:
         return None, None, None, ["R", "S", "WB"]
@@ -126,7 +127,7 @@ def RLR(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    rec = (6.0 - dist ** 2 + 2.0 * cos_a_b + 2.0 * dist * (sin_a - sin_b)) / 8.0
+    rec = (6.0 - dist**2 + 2.0 * cos_a_b + 2.0 * dist * (sin_a - sin_b)) / 8.0
 
     if abs(rec) > 1.0:
         return None, None, None, ["R", "WB", "R"]
@@ -145,7 +146,7 @@ def LRL(alpha, beta, dist):
     cos_b = math.cos(beta)
     cos_a_b = math.cos(alpha - beta)
 
-    rec = (6.0 - dist ** 2 + 2.0 * cos_a_b + 2.0 * dist * (sin_b - sin_a)) / 8.0
+    rec = (6.0 - dist**2 + 2.0 * cos_a_b + 2.0 * dist * (sin_b - sin_a)) / 8.0
 
     if abs(rec) > 1.0:
         return None, None, None, ["WB", "R", "WB"]
@@ -157,17 +158,17 @@ def LRL(alpha, beta, dist):
     return t_lrl, p_lrl, q_lrl, ["WB", "R", "WB"]
 
 
-def interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
+def interpolate(ind, length, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
     if m == "S":
-        px[ind] = ox + l / maxc * math.cos(oyaw)
-        py[ind] = oy + l / maxc * math.sin(oyaw)
+        px[ind] = ox + length / maxc * math.cos(oyaw)
+        py[ind] = oy + length / maxc * math.sin(oyaw)
         pyaw[ind] = oyaw
     else:
-        ldx = math.sin(l) / maxc
+        ldx = math.sin(length) / maxc
         if m == "WB":
-            ldy = (1.0 - math.cos(l)) / maxc
+            ldy = (1.0 - math.cos(length)) / maxc
         elif m == "R":
-            ldy = (1.0 - math.cos(l)) / (-maxc)
+            ldy = (1.0 - math.cos(length)) / (-maxc)
 
         gdx = math.cos(-oyaw) * ldx + math.sin(-oyaw) * ldy
         gdy = -math.sin(-oyaw) * ldx + math.cos(-oyaw) * ldy
@@ -175,11 +176,11 @@ def interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
         py[ind] = oy + gdy
 
     if m == "WB":
-        pyaw[ind] = oyaw + l
+        pyaw[ind] = oyaw + length
     elif m == "R":
-        pyaw[ind] = oyaw - l
+        pyaw[ind] = oyaw - length
 
-    if l > 0.0:
+    if length > 0.0:
         directions[ind] = 1
     else:
         directions[ind] = -1
@@ -208,8 +209,8 @@ def generate_local_course(L, lengths, mode, maxc, step_size):
 
     ll = 0.0
 
-    for m, l, i in zip(mode, lengths, range(len(mode))):
-        if l > 0.0:
+    for m, length, i in zip(mode, lengths, range(len(mode))):
+        if length > 0.0:
             d = step_size
         else:
             d = -step_size
@@ -222,17 +223,15 @@ def generate_local_course(L, lengths, mode, maxc, step_size):
         else:
             pd = d - ll
 
-        while abs(pd) <= abs(l):
+        while abs(pd) <= abs(length):
             ind += 1
-            px, py, pyaw, directions = \
-                interpolate(ind, pd, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
+            px, py, pyaw, directions = interpolate(ind, pd, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
             pd += d
 
-        ll = l - pd - d  # calc remain length
+        ll = length - pd - d  # calc remain length
 
         ind += 1
-        px, py, pyaw, directions = \
-            interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
+        px, py, pyaw, directions = interpolate(ind, length, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
 
     if len(px) <= 1:
         return [], [], [], []
@@ -266,14 +265,13 @@ def planning_from_origin(gx, gy, gyaw, curv, step_size):
         if t is None:
             continue
 
-        cost = (abs(t) + abs(p) + abs(q))
+        cost = abs(t) + abs(p) + abs(q)
         if best_cost > cost:
             bt, bp, bq, best_mode = t, p, q, mode
             best_cost = cost
     lengths = [bt, bp, bq]
 
-    x_list, y_list, yaw_list, directions = generate_local_course(
-        sum(lengths), lengths, best_mode, curv, step_size)
+    x_list, y_list, yaw_list, directions = generate_local_course(sum(lengths), lengths, best_mode, curv, step_size)
 
     return x_list, y_list, yaw_list, best_mode, best_cost
 
@@ -282,14 +280,13 @@ def calc_dubins_path(sx, sy, syaw, gx, gy, gyaw, curv, step_size=0.1):
     gx = gx - sx
     gy = gy - sy
 
-    l_rot = Rot.from_euler('z', syaw).as_dcm()[0:2, 0:2]
+    l_rot = Rot.from_euler("z", syaw).as_dcm()[0:2, 0:2]
     le_xy = np.stack([gx, gy]).T @ l_rot
     le_yaw = gyaw - syaw
 
-    lp_x, lp_y, lp_yaw, mode, lengths = planning_from_origin(
-        le_xy[0], le_xy[1], le_yaw, curv, step_size)
+    lp_x, lp_y, lp_yaw, mode, lengths = planning_from_origin(le_xy[0], le_xy[1], le_yaw, curv, step_size)
 
-    rot = Rot.from_euler('z', -syaw).as_dcm()[0:2, 0:2]
+    rot = Rot.from_euler("z", -syaw).as_dcm()[0:2, 0:2]
     converted_xy = np.stack([lp_x, lp_y]).T @ rot
     x_list = converted_xy[:, 0] + sx
     y_list = converted_xy[:, 1] + sy
@@ -301,8 +298,16 @@ def calc_dubins_path(sx, sy, syaw, gx, gy, gyaw, curv, step_size=0.1):
 def main():
     # choose states pairs: (x, y, yaw)
     # simulation-1
-    states = [(0, 0, 0), (10, 10, -90), (20, 5, 60), (30, 10, 120),
-              (35, -5, 30), (25, -10, -120), (15, -15, 100), (0, -10, -90)]
+    states = [
+        (0, 0, 0),
+        (10, 10, -90),
+        (20, 5, 60),
+        (30, 10, 120),
+        (35, -5, 30),
+        (25, -10, -120),
+        (15, -15, 100),
+        (0, -10, -90),
+    ]
 
     # simulation-2
     # states = [(-3, 3, 120), (10, -7, 30), (10, 13, 30), (20, 5, -25),
@@ -332,10 +337,10 @@ def main():
 
     for i in range(len(path_x)):
         plt.clf()
-        plt.plot(path_x, path_y, linewidth=1, color='gray')
+        plt.plot(path_x, path_y, linewidth=1, color="gray")
 
         for x, y, theta in states:
-            draw.Arrow(x, y, np.deg2rad(theta), 2, 'blueviolet')
+            draw.Arrow(x, y, np.deg2rad(theta), 2, "blueviolet")
 
         draw.Car(path_x[i], path_y[i], yaw[i], 1.5, 3)
 
@@ -348,5 +353,5 @@ def main():
     plt.pause(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

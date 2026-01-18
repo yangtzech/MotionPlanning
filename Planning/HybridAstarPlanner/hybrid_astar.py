@@ -3,22 +3,21 @@ Hybrid A*
 @author: Huiming Zhou
 """
 
+import math
 import os
 import sys
-import math
-import heapq
-from heapdict import heapdict
 import time
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.spatial.kdtree as kd
+from heapdict import heapdict
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
-import HybridAstarPlanner.astar as astar
-import HybridAstarPlanner.draw as draw
-import CurvesGenerator.reeds_shepp as rs
+import Planning.CurvesGenerator.reeds_shepp as rs
+import Planning.HybridAstarPlanner.astar as astar
+import Planning.HybridAstarPlanner.draw as draw
 
 
 class C:  # Parameter config
@@ -48,8 +47,7 @@ class C:  # Parameter config
 
 
 class Node:
-    def __init__(self, xind, yind, yawind, direction, x, y,
-                 yaw, directions, steer, cost, pind):
+    def __init__(self, xind, yind, yawind, direction, x, y, yaw, directions, steer, cost, pind):
         self.xind = xind
         self.yind = yind
         self.yawind = yawind
@@ -64,8 +62,23 @@ class Node:
 
 
 class Para:
-    def __init__(self, minx, miny, minyaw, maxx, maxy, maxyaw,
-                 xw, yw, yaww, xyreso, yawreso, ox, oy, kdtree):
+    def __init__(
+        self,
+        minx,
+        miny,
+        minyaw,
+        maxx,
+        maxy,
+        maxyaw,
+        xw,
+        yw,
+        yaww,
+        xyreso,
+        yawreso,
+        ox,
+        oy,
+        kdtree,
+    ):
         self.minx = minx
         self.miny = miny
         self.minyaw = minyaw
@@ -99,7 +112,7 @@ class QueuePrior:
         return len(self.queue) == 0  # if Q is empty
 
     def put(self, item, priority):
-        self.queue[item] = priority  # push 
+        self.queue[item] = priority  # push
 
     def get(self):
         return self.queue.popitem()[0]  # pop out element with smallest priority
@@ -227,17 +240,13 @@ def calc_next_node(n_curr, c_id, u, d, P):
 
     directions = [direction for _ in range(len(xlist))]
 
-    node = Node(xind, yind, yawind, direction, xlist, ylist,
-                yawlist, directions, u, cost, c_id)
+    node = Node(xind, yind, yawind, direction, xlist, ylist, yawlist, directions, u, cost, c_id)
 
     return node
 
 
 def is_index_ok(xind, yind, xlist, ylist, yawlist, P):
-    if xind <= P.minx or \
-            xind >= P.maxx or \
-            yind <= P.miny or \
-            yind >= P.maxy:
+    if xind <= P.minx or xind >= P.maxx or yind <= P.miny or yind >= P.maxy:
         return False
 
     ind = range(0, len(xlist), C.COLLISION_CHECK_STEP)
@@ -267,8 +276,19 @@ def update_node_with_analystic_expantion(n_curr, ngoal, P):
     fpind = calc_index(n_curr, P)
     fsteer = 0.0
 
-    fpath = Node(n_curr.xind, n_curr.yind, n_curr.yawind, n_curr.direction,
-                 fx, fy, fyaw, fd, fsteer, fcost, fpind)
+    fpath = Node(
+        n_curr.xind,
+        n_curr.yind,
+        n_curr.yawind,
+        n_curr.direction,
+        fx,
+        fy,
+        fyaw,
+        fd,
+        fsteer,
+        fcost,
+        fpind,
+    )
 
     return True, fpath
 
@@ -360,15 +380,13 @@ def calc_rs_path_cost(rspath):
 
 
 def calc_hybrid_cost(node, hmap, P):
-    cost = node.cost + \
-           C.H_COST * hmap[node.xind - P.minx][node.yind - P.miny]
+    cost = node.cost + C.H_COST * hmap[node.xind - P.minx][node.yind - P.miny]
 
     return cost
 
 
 def calc_motion_set():
-    s = np.arange(C.MAX_STEER / C.N_STEER,
-                  C.MAX_STEER, C.MAX_STEER / C.N_STEER)
+    s = np.arange(C.MAX_STEER / C.N_STEER, C.MAX_STEER, C.MAX_STEER / C.N_STEER)
 
     steer = list(s) + [0.0] + list(-s)
     direc = [1.0 for _ in range(len(steer))] + [-1.0 for _ in range(len(steer))]
@@ -378,18 +396,14 @@ def calc_motion_set():
 
 
 def is_same_grid(node1, node2):
-    if node1.xind != node2.xind or \
-            node1.yind != node2.yind or \
-            node1.yawind != node2.yawind:
+    if node1.xind != node2.xind or node1.yind != node2.yind or node1.yawind != node2.yawind:
         return False
 
     return True
 
 
 def calc_index(node, P):
-    ind = (node.yawind - P.minyaw) * P.xw * P.yw + \
-          (node.yind - P.miny) * P.xw + \
-          (node.xind - P.minx)
+    ind = (node.yawind - P.minyaw) * P.xw * P.yw + (node.yind - P.miny) * P.xw + (node.xind - P.minx)
 
     return ind
 
@@ -406,27 +420,47 @@ def calc_parameters(ox, oy, xyreso, yawreso, kdtree):
     maxyaw = round(C.PI / yawreso)
     yaww = maxyaw - minyaw
 
-    return Para(minx, miny, minyaw, maxx, maxy, maxyaw,
-                xw, yw, yaww, xyreso, yawreso, ox, oy, kdtree)
+    return Para(
+        minx,
+        miny,
+        minyaw,
+        maxx,
+        maxy,
+        maxyaw,
+        xw,
+        yw,
+        yaww,
+        xyreso,
+        yawreso,
+        ox,
+        oy,
+        kdtree,
+    )
 
 
-def draw_car(x, y, yaw, steer, color='black'):
-    car = np.array([[-C.RB, -C.RB, C.RF, C.RF, -C.RB],
-                    [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2]])
+def draw_car(x, y, yaw, steer, color="black"):
+    car = np.array(
+        [
+            [-C.RB, -C.RB, C.RF, C.RF, -C.RB],
+            [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2],
+        ]
+    )
 
-    wheel = np.array([[-C.TR, -C.TR, C.TR, C.TR, -C.TR],
-                      [C.TW / 4, -C.TW / 4, -C.TW / 4, C.TW / 4, C.TW / 4]])
+    wheel = np.array(
+        [
+            [-C.TR, -C.TR, C.TR, C.TR, -C.TR],
+            [C.TW / 4, -C.TW / 4, -C.TW / 4, C.TW / 4, C.TW / 4],
+        ]
+    )
 
     rlWheel = wheel.copy()
     rrWheel = wheel.copy()
     frWheel = wheel.copy()
     flWheel = wheel.copy()
 
-    Rot1 = np.array([[math.cos(yaw), -math.sin(yaw)],
-                     [math.sin(yaw), math.cos(yaw)]])
+    Rot1 = np.array([[math.cos(yaw), -math.sin(yaw)], [math.sin(yaw), math.cos(yaw)]])
 
-    Rot2 = np.array([[math.cos(steer), math.sin(steer)],
-                     [-math.sin(steer), math.cos(steer)]])
+    Rot2 = np.array([[math.cos(steer), math.sin(steer)], [-math.sin(steer), math.cos(steer)]])
 
     frWheel = np.dot(Rot2, frWheel)
     flWheel = np.dot(Rot2, flWheel)
@@ -497,8 +531,7 @@ def main():
     ox, oy = design_obstacles(x, y)
 
     t0 = time.time()
-    path = hybrid_astar_planning(sx, sy, syaw0, gx, gy, gyaw0,
-                                 ox, oy, C.XY_RESO, C.YAW_RESO)
+    path = hybrid_astar_planning(sx, sy, syaw0, gx, gy, gyaw0, ox, oy, C.XY_RESO, C.YAW_RESO)
     t1 = time.time()
     print("running T: ", t1 - t0)
 
@@ -514,7 +547,7 @@ def main():
     for k in range(len(x)):
         plt.cla()
         plt.plot(ox, oy, "sk")
-        plt.plot(x, y, linewidth=1.5, color='r')
+        plt.plot(x, y, linewidth=1.5, color="r")
 
         if k < len(x) - 2:
             dy = (yaw[k + 1] - yaw[k]) / C.MOVE_STEP
@@ -522,7 +555,7 @@ def main():
         else:
             steer = 0.0
 
-        draw_car(gx, gy, gyaw0, 0.0, 'dimgray')
+        draw_car(gx, gy, gyaw0, 0.0, "dimgray")
         draw_car(x[k], y[k], yaw[k], steer)
         plt.title("Hybrid A*")
         plt.axis("equal")
@@ -532,5 +565,5 @@ def main():
     print("Done!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

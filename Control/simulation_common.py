@@ -46,9 +46,7 @@ def run_simulation(
     Returns:
         dict with all_time, all_v_actual, all_v_ref, all_lat_error, all_yaw_error
     """
-    x, y, yaw, cur, direct, path_x, path_y = generate_path(
-        states, config.MAX_STEER, config.WB
-    )
+    x, y, yaw, cur, direct, path_x, path_y = generate_path(states, config.MAX_STEER, config.WB)
     # 合并所有段的分析数据
     all_time = []
     all_v_actual = []
@@ -64,9 +62,7 @@ def run_simulation(
     if show_realtime_performance:
         perf_monitor = get_performance_monitor(controller_name)
 
-    for seg_id, (cx, cy, cyaw, ccurv, cdirect) in enumerate(
-        zip(x, y, yaw, cur, direct)
-    ):
+    for seg_id, (cx, cy, cyaw, ccurv, cdirect) in enumerate(zip(x, y, yaw, cur, direct)):
         t = 0.0
         maxTime = config.time_max
         yaw_old = cyaw[0]
@@ -91,7 +87,6 @@ def run_simulation(
         # 初始化动画更新器
         if show_animation and animator is None:
             animator = get_animator(path_x, path_y, config)
-            event_bound = True
 
         while t <= maxTime:
             lat_output = lat_controller.ComputeControlCommand(node, ref_trajectory)

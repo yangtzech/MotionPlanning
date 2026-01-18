@@ -4,7 +4,6 @@ author: huiming zhou
 """
 
 import copy
-import math
 
 import cvxpy
 import numpy as np
@@ -32,16 +31,14 @@ class MPC_Frenet_FrameController(ControllerBase):
 
         z0 = [ed, 0.0, e_phi, 0.0, node.v]
 
-        self.a_opt, self.delta_opt, x_opt, y_opt, yaw_opt, v_opt = (
-            self.linear_mpc_control(
-                z_ref,
-                z0,
-                node,
-                self.a_opt,
-                self.delta_opt,
-                direct=node.direct,
-                ref_path=ref_path,
-            )
+        self.a_opt, self.delta_opt, x_opt, y_opt, yaw_opt, v_opt = self.linear_mpc_control(
+            z_ref,
+            z0,
+            node,
+            self.a_opt,
+            self.delta_opt,
+            direct=node.direct,
+            ref_path=ref_path,
         )
         log_controller_debug(f"a_opt: {self.a_opt}")
         log_controller_debug(f"delta_opt: {self.delta_opt}")
@@ -50,9 +47,7 @@ class MPC_Frenet_FrameController(ControllerBase):
             delta_exc, a_exc = self.delta_opt[0], self.a_opt[0]
 
         return ControlCommand(
-            steer=process_wheel_angle(
-                delta_exc, -self.config.MAX_STEER, self.config.MAX_STEER
-            ),
+            steer=process_wheel_angle(delta_exc, -self.config.MAX_STEER, self.config.MAX_STEER),
             target_ind=target_ind,
             lat_error=ed,
             yaw_error=e_phi,
@@ -73,9 +68,7 @@ class MPC_Frenet_FrameController(ControllerBase):
         for i in range(1, config.mpc.T + 1):
             dist_move += abs(node.v) * config.dt
             # TODO：根据dist_move和轨迹点上的距离信息插值
-            index = min(
-                index + int(round(dist_move / config.mpc.d_dist)), ref_path.ind_end
-            )
+            index = min(index + int(round(dist_move / config.mpc.d_dist)), ref_path.ind_end)
 
             z_ref[0, i] = ref_path.cx[index]
             z_ref[1, i] = ref_path.cy[index]
@@ -104,9 +97,7 @@ class MPC_Frenet_FrameController(ControllerBase):
 
         return z_ref
 
-    def linear_mpc_control(
-        self, z_ref, z0, node: Node, a_old, delta_old, direct, ref_path: PATH
-    ):
+    def linear_mpc_control(self, z_ref, z0, node: Node, a_old, delta_old, direct, ref_path: PATH):
         config = self.config
         if a_old is None or delta_old is None:
             a_old = [0.0] * config.mpc.T
@@ -118,13 +109,9 @@ class MPC_Frenet_FrameController(ControllerBase):
             log_controller_debug(f"a_old: {a_old}")
             log_controller_debug(f"delta_old: {delta_old}")
 
-            z_bar = self.predict_states_in_T_step(
-                node, z0, a_old, delta_old, z_ref, direct, ref_path
-            )
+            z_bar = self.predict_states_in_T_step(node, z0, a_old, delta_old, z_ref, direct, ref_path)
             a_rec, delta_rec = a_old[:], delta_old[:]
-            a_old, delta_old, x, y, yaw, v = self.solve_linear_mpc(
-                z_ref, z_bar, z0, delta_old
-            )
+            a_old, delta_old, x, y, yaw, v = self.solve_linear_mpc(z_ref, z_bar, z0, delta_old)
 
             du_a_max = max([abs(ia - iao) for ia, iao in zip(a_old, a_rec)])
             du_d_max = max([abs(ide - ido) for ide, ido in zip(delta_old, delta_rec)])
@@ -134,9 +121,7 @@ class MPC_Frenet_FrameController(ControllerBase):
 
         return a_old, delta_old, x, y, yaw, v
 
-    def predict_states_in_T_step(
-        self, node: Node, z0, a, delta, z_ref, direct, ref_path: PATH
-    ):
+    def predict_states_in_T_step(self, node: Node, z0, a, delta, z_ref, direct, ref_path: PATH):
         """
         given the current state, using the acceleration and delta strategy of last time,
         predict the states of vehicle in T steps.
@@ -157,15 +142,11 @@ class MPC_Frenet_FrameController(ControllerBase):
         node0.direct = direct
 
         for ai, di, i in zip(a, delta, range(1, P.T + 1)):
-            log_controller_debug(
-                f"original node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}"
-            )
+            log_controller_debug(f"original node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}")
             log_controller_debug(f"apply ai, di, direct: {ai}, {di}, {direct}")
             # 使用副本节点进行状态预测，避免修改原始 node
             node0.update(ai, di, direct, 0.0, 0.0)
-            log_controller_debug(
-                f"Predicted node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}"
-            )
+            log_controller_debug(f"Predicted node copy: {node0.x}, {node0.y}, {node0.yaw}, {node0.v}")
             target_ind = ref_path.calc_nearest_ind(node0)
             ed, e_phi = ref_path.cal_ed_e_phi(node0, target_ind)
             z_bar[0, i] = ed
@@ -207,10 +188,7 @@ class MPC_Frenet_FrameController(ControllerBase):
 
             if t < config.mpc_frenet.T - 1:
                 cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], config.mpc_frenet.Rd)
-                constrains += [
-                    cvxpy.abs(u[1, t + 1] - u[1, t])
-                    <= config.MAX_STEER_CHANGE * config.dt
-                ]
+                constrains += [cvxpy.abs(u[1, t + 1] - u[1, t]) <= config.MAX_STEER_CHANGE * config.dt]
 
         cost += cvxpy.quad_form(
             z_ref[:, config.mpc_frenet.T] - z[:, config.mpc_frenet.T],

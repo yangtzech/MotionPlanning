@@ -31,9 +31,7 @@ def get_controller_class(controller_name):
     }
 
     if controller_name not in controllers:
-        raise ValueError(
-            f"Unknown controller: {controller_name}. Available: {list(controllers.keys())}"
-        )
+        raise ValueError(f"Unknown controller: {controller_name}. Available: {list(controllers.keys())}")
 
     return controllers[controller_name]
 
@@ -44,9 +42,7 @@ def is_mpc_controller(controller_name):
     return controller_name in mpc_controllers
 
 
-def run_single_simulation(
-    controller_name, config_override=None, show_realtime_performance=False
-):
+def run_single_simulation(controller_name, config_override=None, show_realtime_performance=False):
     """运行单个控制器的仿真"""
     config = Config()
 
@@ -116,9 +112,7 @@ def main():
         required=True,
         help="Controller type(s), e.g. --controller PurePursuit LQRDynamic",
     )
-    parser.add_argument(
-        "--max_speed", type=float, default=None, help="Override max speed (m/s)"
-    )
+    parser.add_argument("--max_speed", type=float, default=None, help="Override max speed (m/s)")
     parser.add_argument("--dt", type=float, default=None, help="Override time step (s)")
     parser.add_argument(
         "--max_time",

@@ -1,18 +1,12 @@
-# flake8 and mypy checks are intentionally run from Makefile/CI
-# to keep pre-commit fast and focused on auto-formatters (black/isort).
+# ruff checks are intentionally run from Makefile/CI
+# to keep pre-commit fast and focused on auto-formatters (ruff).
 repos:
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.5
     hooks:
-      - id: black
-        language_version: python3
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort (python)
-        language_version: python3
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
 
   # Local hook: run make checks on push (pre-push)
   - repo: local

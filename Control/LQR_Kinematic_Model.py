@@ -124,20 +124,14 @@ class LQRKinematicController(ControllerBase):
 
         while num_iteration < max_num_iteration and diff > tolerance:
             num_iteration += 1
-            P_next = (
-                AT @ P @ A
-                - (AT @ P @ B + M) @ np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT)
-                + Q
-            )
+            P_next = AT @ P @ A - (AT @ P @ B + M) @ np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT) + Q
 
             # check the difference between P and P_next
             diff = (abs(P_next - P)).max()
             P = P_next
 
         if num_iteration >= max_num_iteration:
-            log_controller_warning(
-                f"LQR solver cannot converge to a solution, last consecutive result diff is: {diff}"
-            )
+            log_controller_warning(f"LQR solver cannot converge to a solution, last consecutive result diff is: {diff}")
 
         K = np.linalg.inv(BT @ P @ B + R) @ (BT @ P @ A + MT)
 

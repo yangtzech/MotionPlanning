@@ -23,13 +23,13 @@ dependencies = [
     "flake8>=7.3.0",
     "fonttools>=4.60.1",
     "h11==0.16.0",
+    "heapdict>=1.0.1",
     "identify==2.6.15",
     "idna==3.11",
     "iniconfig==2.1.0",
     "ipykernel==7.1.0",
     "ipython==9.6.0",
     "ipython-pygments-lexers==1.1.1",
-    "isort==7.0.0",
     "itsdangerous==2.2.0",
     "jedi==0.19.2",
     "jupyter-client==8.6.3",
@@ -94,12 +94,18 @@ dependencies = [
     "uvicorn==0.38.0",
     "virtualenv==20.35.3",
     "wcwidth==0.2.14",
-    "websockets==15.0.1",
+    "websockets==15.0.0",
     "wheel==0.45.1",
 ]
 
 [tool.ruff]
 line-length = 120
 lint.select = ["C", "E", "F", "W"]
-lint.ignore = ["E501", "E203"]
+lint.ignore = ["E501", "E203", "C901"]  # 添加C901忽略复杂度警告
 lint.extend-select = ["I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,16 +1,16 @@
+import copy
+import math
 import os
 import sys
-import math
-import copy
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
-from CurvesGenerator import cubic_spline, quintic_polynomial, quartic_polynomial
-import LatticePlanner.env as env
-import LatticePlanner.draw as draw
+import Planning.LatticePlanner.draw as draw
+import Planning.LatticePlanner.env as env
+from Planning.CurvesGenerator import cubic_spline, quartic_polynomial, quintic_polynomial
 
 
 class C:
@@ -79,10 +79,9 @@ class Path:
 
 
 def sampling_paths_for_Cruising(l0, l0_v, l0_a, s0, s0_v, s0_a, ref_path):
-    PATHS = dict()
+    PATHS = {}
 
     for s1_v in np.arange(C.TARGET_SPEED * 0.6, C.TARGET_SPEED * 1.4, C.TARGET_SPEED * 0.2):
-
         for t1 in np.arange(4.5, 5.5, 0.2):
             path_pre = Path()
             path_lon = quartic_polynomial.QuarticPolynomial(s0, s0_v, s0_a, s1_v, 0.0, t1)
@@ -109,11 +108,13 @@ def sampling_paths_for_Cruising(l0, l0_v, l0_a, s0, s0_v, s0_a, ref_path):
                 s_jerk_sum = sum(np.abs(path.s_jerk))
                 v_diff = abs(C.TARGET_SPEED - path.s_v[-1])
 
-                path.cost = C.K_JERK * (l_jerk_sum + s_jerk_sum) + \
-                            C.K_V_DIFF * v_diff + \
-                            C.K_TIME * t1 * 2 + \
-                            C.K_OFFSET * abs(path.l[-1]) + \
-                            C.K_COLLISION * is_path_collision(path)
+                path.cost = (
+                    C.K_JERK * (l_jerk_sum + s_jerk_sum)
+                    + C.K_V_DIFF * v_diff
+                    + C.K_TIME * t1 * 2
+                    + C.K_OFFSET * abs(path.l[-1])
+                    + C.K_COLLISION * is_path_collision(path)
+                )
 
                 PATHS[path] = path.cost
 
@@ -121,10 +122,9 @@ def sampling_paths_for_Cruising(l0, l0_v, l0_a, s0, s0_v, s0_a, ref_path):
 
 
 def sampling_paths_for_Stopping(l0, l0_v, l0_a, s0, s0_v, s0_a, ref_path):
-    PATHS = dict()
+    PATHS = {}
 
     for s1_v in [-1.0, 0.0, 1.0, 2.0]:
-
         for t1 in np.arange(1.0, 16.0, 1.0):
             path_pre = Path()
             path_lon = quintic_polynomial.QuinticPolynomial(s0, s0_v, s0_a, 55.0, s1_v, 0.0, t1)
@@ -154,11 +154,13 @@ def sampling_paths_for_Stopping(l0, l0_v, l0_a, s0, s0_v, s0_a, ref_path):
                 s_jerk_sum = sum(np.abs(path.s_jerk))
                 v_diff = (path.s_v[-1]) ** 2
 
-                path.cost = C.K_JERK * (l_jerk_sum + s_jerk_sum) + \
-                            C.K_V_DIFF * v_diff + \
-                            C.K_TIME * t1 * 2 + \
-                            C.K_OFFSET * abs(path.l[-1]) + \
-                            50.0 * sum(np.abs(path.s_v))
+                path.cost = (
+                    C.K_JERK * (l_jerk_sum + s_jerk_sum)
+                    + C.K_V_DIFF * v_diff
+                    + C.K_TIME * t1 * 2
+                    + C.K_OFFSET * abs(path.l[-1])
+                    + 50.0 * sum(np.abs(path.s_v))
+                )
 
                 PATHS[path] = path.cost
 
@@ -236,9 +238,11 @@ def verify_path(path):
     #         any([abs(a) > C.acceleration_max for a in path.s_a]):
     #     return False
 
-    if any([v > C.MAX_SPEED for v in path.s_v]) or \
-            any([abs(a) > C.MAX_ACCEL for a in path.s_a]) or \
-            any([abs(curv) > C.MAX_CURVATURE for curv in path.curv]):
+    if (
+        any(v > C.MAX_SPEED for v in path.s_v)
+        or any(abs(a) > C.MAX_ACCEL for a in path.s_a)
+        or any(abs(curv) > C.MAX_CURVATURE for curv in path.curv)
+    ):
         return False
 
     return True
@@ -308,8 +312,7 @@ def main_Crusing():
     bx1, by1 = ENV.bound_in
     bx2, by2 = ENV.bound_out
 
-    C.obs = np.array([[50, 10], [96, 25], [70, 40],
-                      [40, 50], [25, 75]])
+    C.obs = np.array([[50, 10], [96, 25], [70, 40], [40, 50], [25, 75]])
 
     obs_x = [x for x, y in C.obs]
     obs_y = [y for x, y in C.obs]
@@ -347,13 +350,14 @@ def main_Crusing():
         plt.cla()
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect(
-            'key_release_event',
-            lambda event: [exit(0) if event.key == 'escape' else None])
-        plt.plot(rx, ry, linestyle='--', color='gray')
-        plt.plot(bx1, by1, linewidth=1.5, color='k')
-        plt.plot(bx2, by2, linewidth=1.5, color='k')
-        plt.plot(path.x[1:], path.y[1:], linewidth='2', color='royalblue')
-        plt.plot(obs_x, obs_y, 'ok')
+            "key_release_event",
+            lambda event: [exit(0) if event.key == "escape" else None],
+        )
+        plt.plot(rx, ry, linestyle="--", color="gray")
+        plt.plot(bx1, by1, linewidth=1.5, color="k")
+        plt.plot(bx2, by2, linewidth=1.5, color="k")
+        plt.plot(path.x[1:], path.y[1:], linewidth="2", color="royalblue")
+        plt.plot(obs_x, obs_y, "ok")
         draw.draw_car(path.x[1], path.y[1], path.yaw[1], steer, C)
         plt.title("[Crusing Mode]  v :" + str(s0_v * 3.6)[0:4] + " km/h")
         plt.axis("equal")
@@ -400,12 +404,13 @@ def main_Stopping():
         plt.cla()
         # for stopping simulation with the esc key.
         plt.gcf().canvas.mpl_connect(
-            'key_release_event',
-            lambda event: [exit(0) if event.key == 'escape' else None])
-        plt.plot(rx, ry, linestyle='--', color='gray')
-        plt.plot(bx1, by1, linewidth=1.5, color='k')
-        plt.plot(bx2, by2, linewidth=1.5, color='k')
-        plt.plot(path.x[1:], path.y[1:], linewidth='2', color='royalblue')
+            "key_release_event",
+            lambda event: [exit(0) if event.key == "escape" else None],
+        )
+        plt.plot(rx, ry, linestyle="--", color="gray")
+        plt.plot(bx1, by1, linewidth=1.5, color="k")
+        plt.plot(bx2, by2, linewidth=1.5, color="k")
+        plt.plot(path.x[1:], path.y[1:], linewidth="2", color="royalblue")
         draw.draw_car(path.x[1], path.y[1], path.yaw[1], 0.0, C)
         plt.title("[Stopping Mode]  v :" + str(s0_v * 3.6)[0:4] + " km/h")
         plt.axis("equal")
@@ -414,13 +419,13 @@ def main_Stopping():
     plt.pause(0.0001)
     plt.show()
 
-    plt.plot(rx, ry, linestyle='--', color='gray')
-    plt.plot(bx1, by1, linewidth=1.5, color='k')
-    plt.plot(bx2, by2, linewidth=1.5, color='k')
+    plt.plot(rx, ry, linestyle="--", color="gray")
+    plt.plot(bx1, by1, linewidth=1.5, color="k")
+    plt.plot(bx2, by2, linewidth=1.5, color="k")
     plt.axis("equal")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_Crusing()
     # main_Stopping()

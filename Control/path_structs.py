@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-from utils import angle_normalize, pi_2_pi
+from utils import angle_normalize
 
 
 class Node:
@@ -98,9 +98,7 @@ class PATH:
         tyaw = self.cyaw[target_ind]
 
         # 计算目标点的法向量，指向目标点的左侧
-        target_normal_vec = np.array(
-            [math.cos(tyaw + math.pi / 2.0), math.sin(tyaw + math.pi / 2.0)]
-        )
+        target_normal_vec = np.array([math.cos(tyaw + math.pi / 2.0), math.sin(tyaw + math.pi / 2.0)])
         # 计算节点到目标点的向量
         node_to_target_vec = np.array([node.x - tx, node.y - ty])
         # 计算横向误差，左正右负

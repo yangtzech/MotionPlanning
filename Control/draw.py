@@ -25,12 +25,8 @@ class Arrow:
         y_hat_end_R = y_hat_start + d * np.sin(theta_hat_R)
 
         plt.plot([x_start, x_end], [y_start, y_end], color=c, linewidth=w)
-        plt.plot(
-            [x_hat_start, x_hat_end_L], [y_hat_start, y_hat_end_L], color=c, linewidth=w
-        )
-        plt.plot(
-            [x_hat_start, x_hat_end_R], [y_hat_start, y_hat_end_R], color=c, linewidth=w
-        )
+        plt.plot([x_hat_start, x_hat_end_L], [y_hat_start, y_hat_end_L], color=c, linewidth=w)
+        plt.plot([x_hat_start, x_hat_end_R], [y_hat_start, y_hat_end_R], color=c, linewidth=w)
 
 
 def draw_car(x, y, yaw, steer, C, color="black"):

@@ -35,7 +35,7 @@ def plot_tracking_results(results):
     for idx, result in enumerate(results):
         c = colors[idx % len(colors)]
         for seg_id in range(len(result["all_time"])):
-            label_prefix = f"{result['controller']} S{seg_id+1}"
+            label_prefix = f"{result['controller']} S{seg_id + 1}"
             axs[0].plot(
                 result["all_time"][seg_id],
                 result["all_v_actual"][seg_id],
@@ -78,9 +78,7 @@ def plot_tracking_results(results):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Configurable Path Tracking Simulation"
-    )
+    parser = argparse.ArgumentParser(description="Configurable Path Tracking Simulation")
     parser.add_argument(
         "--controller",
         type=str,
@@ -89,9 +87,7 @@ def main():
         choices=["PurePursuit", "Stanley", "RearWheelFeedback"],
         help="Lateral controller type(s), e.g. --controller PurePursuit Stanley",
     )
-    parser.add_argument(
-        "--max_speed", type=float, default=None, help="Override max speed (m/s)"
-    )
+    parser.add_argument("--max_speed", type=float, default=None, help="Override max speed (m/s)")
     parser.add_argument("--dt", type=float, default=None, help="Override time step (s)")
     parser.add_argument(
         "--max_time",
@@ -118,9 +114,7 @@ def main():
     for ctrl_name in args.controller:
         lat_controller = get_lat_controller(ctrl_name, config)
         lon_controller = PIDSpeedController(config)
-        sim_result = run_simulation(
-            config, states, lat_controller, lon_controller, show_animation=False
-        )
+        sim_result = run_simulation(config, states, lat_controller, lon_controller, show_animation=False)
         sim_result["controller"] = ctrl_name
         results.append(sim_result)
     plot_tracking_results(results)

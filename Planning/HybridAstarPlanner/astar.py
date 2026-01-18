@@ -1,7 +1,8 @@
 import heapq
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Node:
@@ -46,12 +47,11 @@ def astar_planning(sx, sy, gx, gy, ox, oy, reso, rr):
 
     P, obsmap = calc_parameters(ox, oy, rr, reso)
 
-    open_set, closed_set = dict(), dict()
+    open_set, closed_set = {}, {}
     open_set[calc_index(n_start, P)] = n_start
 
     q_priority = []
-    heapq.heappush(q_priority,
-                   (fvalue(n_start, n_goal), calc_index(n_start, P)))
+    heapq.heappush(q_priority, (fvalue(n_start, n_goal), calc_index(n_start, P)))
 
     while True:
         if not open_set:
@@ -63,9 +63,12 @@ def astar_planning(sx, sy, gx, gy, ox, oy, reso, rr):
         open_set.pop(ind)
 
         for i in range(len(P.motion)):
-            node = Node(n_curr.x + P.motion[i][0],
-                        n_curr.y + P.motion[i][1],
-                        n_curr.cost + u_cost(P.motion[i]), ind)
+            node = Node(
+                n_curr.x + P.motion[i][0],
+                n_curr.y + P.motion[i][1],
+                n_curr.cost + u_cost(P.motion[i]),
+                ind,
+            )
 
             if not check_node(node, P, obsmap):
                 continue
@@ -78,8 +81,7 @@ def astar_planning(sx, sy, gx, gy, ox, oy, reso, rr):
                         open_set[n_ind].pind = ind
                 else:
                     open_set[n_ind] = node
-                    heapq.heappush(q_priority,
-                                   (fvalue(node, n_goal), calc_index(node, P)))
+                    heapq.heappush(q_priority, (fvalue(node, n_goal), calc_index(node, P)))
 
     pathx, pathy = extract_path(closed_set, n_start, n_goal, P)
 
@@ -94,7 +96,7 @@ def calc_holonomic_heuristic_with_obstacle(node, ox, oy, reso, rr):
 
     P, obsmap = calc_parameters(ox, oy, reso, rr)
 
-    open_set, closed_set = dict(), dict()
+    open_set, closed_set = {}, {}
     open_set[calc_index(n_goal, P)] = n_goal
 
     q_priority = []
@@ -110,9 +112,12 @@ def calc_holonomic_heuristic_with_obstacle(node, ox, oy, reso, rr):
         open_set.pop(ind)
 
         for i in range(len(P.motion)):
-            node = Node(n_curr.x + P.motion[i][0],
-                        n_curr.y + P.motion[i][1],
-                        n_curr.cost + u_cost(P.motion[i]), ind)
+            node = Node(
+                n_curr.x + P.motion[i][0],
+                n_curr.y + P.motion[i][1],
+                n_curr.cost + u_cost(P.motion[i]),
+                ind,
+            )
 
             if not check_node(node, P, obsmap):
                 continue
@@ -136,8 +141,7 @@ def calc_holonomic_heuristic_with_obstacle(node, ox, oy, reso, rr):
 
 
 def check_node(node, P, obsmap):
-    if node.x <= P.minx or node.x >= P.maxx or \
-            node.y <= P.miny or node.y >= P.maxy:
+    if node.x <= P.minx or node.x >= P.maxx or node.y <= P.miny or node.y >= P.maxy:
         return False
 
     if obsmap[node.x - P.minx][node.y - P.miny]:
@@ -209,8 +213,7 @@ def extract_path(closed_set, n_start, n_goal, P):
 
 
 def get_motion():
-    motion = [[-1, 0], [-1, 1], [0, 1], [1, 1],
-              [1, 0], [1, -1], [0, -1], [-1, -1]]
+    motion = [[-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]]
 
     return motion
 
@@ -252,13 +255,13 @@ def main():
 
     pathx, pathy = astar_planning(sx, sy, gx, gy, ox, oy, grid_resolution, robot_radius)
 
-    plt.plot(ox, oy, 'sk')
-    plt.plot(pathx, pathy, '-r')
-    plt.plot(sx, sy, 'sg')
-    plt.plot(gx, gy, 'sb')
+    plt.plot(ox, oy, "sk")
+    plt.plot(pathx, pathy, "-r")
+    plt.plot(sx, sy, "sg")
+    plt.plot(gx, gy, "sb")
     plt.axis("equal")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

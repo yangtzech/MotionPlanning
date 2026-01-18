@@ -52,9 +52,7 @@ class RealTimePerformanceMonitor:
         self.axs[2].set_xlabel("Time (s)")
         self.axs[2].grid(True, linestyle="--", alpha=0.5)
 
-        self.fig.suptitle(
-            f"Real-time Performance Monitor - {controller_name}", fontsize=14
-        )
+        self.fig.suptitle(f"Real-time Performance Monitor - {controller_name}", fontsize=14)
         plt.tight_layout()
 
         # 暂停控制

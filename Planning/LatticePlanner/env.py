@@ -3,8 +3,9 @@ Environment for Lattice Planner Simulation
 """
 
 import math
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class ENVCrusing:
@@ -17,7 +18,7 @@ class ENVCrusing:
 
     @staticmethod
     def design_reference_line():
-        rx, ry, ryaw, rc = [], [], [], []
+        rx, ry, _ryaw, _rc = [], [], [], []
         step_curve = 0.1 * math.pi
         step_line = 4
 
@@ -196,12 +197,12 @@ def main():
     bx1, by1 = env.design_boundary_in()
     bx2, by2 = env.design_boundary_out()
 
-    plt.plot(rx, ry, marker='.')
-    plt.plot(bx1, by1, linewidth=1.5, color='k')
-    plt.plot(bx2, by2, linewidth=1.5, color='k')
+    plt.plot(rx, ry, marker=".")
+    plt.plot(bx1, by1, linewidth=1.5, color="k")
+    plt.plot(bx2, by2, linewidth=1.5, color="k")
     plt.axis("equal")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -31,19 +31,15 @@ class MPC_XY_FrameController(ControllerBase):
 
         z0 = [node.x, node.y, node.v, node.yaw]
 
-        self.a_opt, self.delta_opt, x_opt, y_opt, yaw_opt, v_opt = (
-            self.linear_mpc_control(
-                z_ref, z0, self.a_opt, self.delta_opt, direct=node.direct
-            )
+        self.a_opt, self.delta_opt, x_opt, y_opt, yaw_opt, v_opt = self.linear_mpc_control(
+            z_ref, z0, self.a_opt, self.delta_opt, direct=node.direct
         )
 
         if self.delta_opt is not None:
             delta_exc, a_exc = self.delta_opt[0], self.a_opt[0]
 
         return ControlCommand(
-            steer=process_wheel_angle(
-                delta_exc, -self.config.MAX_STEER, self.config.MAX_STEER
-            ),
+            steer=process_wheel_angle(delta_exc, -self.config.MAX_STEER, self.config.MAX_STEER),
             target_ind=target_ind,
             lat_error=ed,
             yaw_error=e_phi,
@@ -64,9 +60,7 @@ class MPC_XY_FrameController(ControllerBase):
         for i in range(1, config.mpc.T + 1):
             dist_move += abs(node.v) * config.dt
             # TODO：根据dist_move和轨迹点上的距离信息插值
-            index = min(
-                index + int(round(dist_move / config.mpc.d_dist)), ref_path.ind_end
-            )
+            index = min(index + int(round(dist_move / config.mpc.d_dist)), ref_path.ind_end)
 
             z_ref[0, i] = ref_path.cx[index]
             z_ref[1, i] = ref_path.cy[index]
@@ -93,9 +87,7 @@ class MPC_XY_FrameController(ControllerBase):
 
             z_bar = self.predict_states_in_T_step(z0, a_old, delta_old, z_ref, direct)
             a_rec, delta_rec = a_old[:], delta_old[:]
-            a_old, delta_old, x, y, yaw, v = self.solve_linear_mpc(
-                z_ref, z_bar, z0, delta_old
-            )
+            a_old, delta_old, x, y, yaw, v = self.solve_linear_mpc(z_ref, z_bar, z0, delta_old)
 
             du_a_max = max([abs(ia - iao) for ia, iao in zip(a_old, a_rec)])
             du_d_max = max([abs(ide - ido) for ide, ido in zip(delta_old, delta_rec)])
@@ -161,22 +153,15 @@ class MPC_XY_FrameController(ControllerBase):
             cost += cvxpy.quad_form(u[:, t], config.mpc.R)
             cost += cvxpy.quad_form(z_ref[:, t] - z[:, t], config.mpc.Q)
 
-            A, B, C = self.calc_linear_discrete_model(
-                z_bar[2, t], z_bar[3, t], d_bar[t]
-            )
+            A, B, C = self.calc_linear_discrete_model(z_bar[2, t], z_bar[3, t], d_bar[t])
 
             constrains += [z[:, t + 1] == A @ z[:, t] + B @ u[:, t] + C]
 
             if t < config.mpc.T - 1:
                 cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], config.mpc.Rd)
-                constrains += [
-                    cvxpy.abs(u[1, t + 1] - u[1, t])
-                    <= config.MAX_STEER_CHANGE * config.dt
-                ]
+                constrains += [cvxpy.abs(u[1, t + 1] - u[1, t]) <= config.MAX_STEER_CHANGE * config.dt]
 
-        cost += cvxpy.quad_form(
-            z_ref[:, config.mpc.T] - z[:, config.mpc.T], config.mpc.Qf
-        )
+        cost += cvxpy.quad_form(z_ref[:, config.mpc.T] - z[:, config.mpc.T], config.mpc.Qf)
 
         constrains += [z[:, 0] == z0]
         constrains += [z[2, :] <= config.MAX_SPEED]

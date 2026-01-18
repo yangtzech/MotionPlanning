@@ -1,7 +1,7 @@
-import time
 import math
-import numpy as np
+import time
 
+import numpy as np
 
 # parameters initiation
 STEP_SIZE = 0.2
@@ -12,13 +12,13 @@ PI = math.pi
 # class for PATH element
 class PATH:
     def __init__(self, lengths, ctypes, L, x, y, yaw, directions):
-        self.lengths = lengths              # lengths of each part of path (+: forward, -: backward) [float]
-        self.ctypes = ctypes                # type of each part of the path [string]
-        self.L = L                          # total path length [float]
-        self.x = x                          # final x positions [m]
-        self.y = y                          # final y positions [m]
-        self.yaw = yaw                      # final yaw angles [rad]
-        self.directions = directions        # forward: 1, backward:-1
+        self.lengths = lengths  # lengths of each part of path (+: forward, -: backward) [float]
+        self.ctypes = ctypes  # type of each part of the path [string]
+        self.L = L  # total path length [float]
+        self.x = x  # final x positions [m]
+        self.y = y  # final y positions [m]
+        self.yaw = yaw  # final yaw angles [rad]
+        self.directions = directions  # forward: 1, backward:-1
 
 
 def calc_optimal_path(sx, sy, syaw, gx, gy, gyaw, maxc, step_size=STEP_SIZE):
@@ -41,16 +41,14 @@ def calc_all_paths(sx, sy, syaw, gx, gy, gyaw, maxc, step_size=STEP_SIZE):
     paths = generate_path(q0, q1, maxc)
 
     for path in paths:
-        x, y, yaw, directions = \
-            generate_local_course(path.L, path.lengths,
-                                  path.ctypes, maxc, step_size * maxc)
+        x, y, yaw, directions = generate_local_course(path.L, path.lengths, path.ctypes, maxc, step_size * maxc)
 
         # convert global coordinate
         path.x = [math.cos(-q0[2]) * ix + math.sin(-q0[2]) * iy + q0[0] for (ix, iy) in zip(x, y)]
         path.y = [-math.sin(-q0[2]) * ix + math.cos(-q0[2]) * iy + q0[1] for (ix, iy) in zip(x, y)]
         path.yaw = [pi_2_pi(iyaw + q0[2]) for iyaw in yaw]
         path.directions = directions
-        path.lengths = [l / maxc for l in path.lengths]
+        path.lengths = [length / maxc for length in path.lengths]
         path.L = path.L / maxc
 
     return paths
@@ -91,7 +89,7 @@ def LSL(x, y, phi):
 
 def LSR(x, y, phi):
     u1, t1 = R(x + math.sin(phi), y - 1.0 - math.cos(phi))
-    u1 = u1 ** 2
+    u1 = u1**2
 
     if u1 >= 4.0:
         u = math.sqrt(u1 - 4.0)
@@ -139,13 +137,13 @@ def SLS(x, y, phi):
         xd = -y / math.tan(phi) + x
         t = xd - math.tan(phi / 2.0)
         u = phi
-        v = math.sqrt((x - xd) ** 2 + y ** 2) - math.tan(phi / 2.0)
+        v = math.sqrt((x - xd) ** 2 + y**2) - math.tan(phi / 2.0)
         return True, t, u, v
     elif y < 0.0 and 0.0 < phi < PI * 0.99:
         xd = -y / math.tan(phi) + x
         t = xd - math.tan(phi / 2.0)
         u = phi
-        v = -math.sqrt((x - xd) ** 2 + y ** 2) - math.tan(phi / 2.0)
+        v = -math.sqrt((x - xd) ** 2 + y**2) - math.tan(phi / 2.0)
         return True, t, u, v
 
     return False, 0.0, 0.0, 0.0
@@ -472,8 +470,8 @@ def generate_local_course(L, lengths, mode, maxc, step_size):
 
     ll = 0.0
 
-    for m, l, i in zip(mode, lengths, range(len(mode))):
-        if l > 0.0:
+    for m, length, i in zip(mode, lengths, range(len(mode))):
+        if length > 0.0:
             d = step_size
         else:
             d = -step_size
@@ -486,17 +484,15 @@ def generate_local_course(L, lengths, mode, maxc, step_size):
         else:
             pd = d - ll
 
-        while abs(pd) <= abs(l):
+        while abs(pd) <= abs(length):
             ind += 1
-            px, py, pyaw, directions = \
-                interpolate(ind, pd, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
+            px, py, pyaw, directions = interpolate(ind, pd, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
             pd += d
 
-        ll = l - pd - d  # calc remain length
+        ll = length - pd - d  # calc remain length
 
         ind += 1
-        px, py, pyaw, directions = \
-            interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
+        px, py, pyaw, directions = interpolate(ind, length, m, maxc, ox, oy, oyaw, px, py, pyaw, directions)
 
     if len(px) <= 1:
         return [], [], [], []
@@ -511,17 +507,17 @@ def generate_local_course(L, lengths, mode, maxc, step_size):
     return px, py, pyaw, directions
 
 
-def interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
+def interpolate(ind, length, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
     if m == "S":
-        px[ind] = ox + l / maxc * math.cos(oyaw)
-        py[ind] = oy + l / maxc * math.sin(oyaw)
+        px[ind] = ox + length / maxc * math.cos(oyaw)
+        py[ind] = oy + length / maxc * math.sin(oyaw)
         pyaw[ind] = oyaw
     else:
-        ldx = math.sin(l) / maxc
+        ldx = math.sin(length) / maxc
         if m == "WB":
-            ldy = (1.0 - math.cos(l)) / maxc
+            ldy = (1.0 - math.cos(length)) / maxc
         elif m == "R":
-            ldy = (1.0 - math.cos(l)) / (-maxc)
+            ldy = (1.0 - math.cos(length)) / (-maxc)
 
         gdx = math.cos(-oyaw) * ldx + math.sin(-oyaw) * ldy
         gdy = -math.sin(-oyaw) * ldx + math.cos(-oyaw) * ldy
@@ -529,11 +525,11 @@ def interpolate(ind, l, m, maxc, ox, oy, oyaw, px, py, pyaw, directions):
         py[ind] = oy + gdy
 
     if m == "WB":
-        pyaw[ind] = oyaw + l
+        pyaw[ind] = oyaw + length
     elif m == "R":
-        pyaw[ind] = oyaw - l
+        pyaw[ind] = oyaw - length
 
-    if l > 0.0:
+    if length > 0.0:
         directions[ind] = 1
     else:
         directions[ind] = -1
@@ -599,9 +595,9 @@ def M(theta):
 def get_label(path):
     label = ""
 
-    for m, l in zip(path.ctypes, path.lengths):
+    for m, length in zip(path.ctypes, path.lengths):
         label = label + m
-        if l > 0.0:
+        if length > 0.0:
             label = label + "+"
         else:
             label = label + "-"
@@ -623,7 +619,7 @@ def calc_curvature(x, y, yaw, directions):
         ddx = 2.0 / (dn + dp) * (dxp / dp - dxn / dn)
         dy = 1.0 / (dn + dp) * (dp / dn * dyn + dn / dp * dyp)
         ddy = 2.0 / (dn + dp) * (dyp / dp - dyn / dn)
-        curvature = (ddy * dx - ddx * dy) / (dx ** 2 + dy ** 2)
+        curvature = (ddy * dx - ddx * dy) / (dx**2 + dy**2)
         d = (dn + dp) / 2.0
 
         if np.isnan(curvature):
@@ -659,9 +655,13 @@ def check_path(sx, sy, syaw, gx, gy, gyaw, maxc):
         assert abs(path.yaw[-1] - gyaw) <= 0.01
 
         # course distance check
-        d = [math.hypot(dx, dy)
-             for dx, dy in zip(np.diff(path.x[0:len(path.x) - 1]),
-                               np.diff(path.y[0:len(path.y) - 1]))]
+        d = [
+            math.hypot(dx, dy)
+            for dx, dy in zip(
+                np.diff(path.x[0 : len(path.x) - 1]),
+                np.diff(path.y[0 : len(path.y) - 1]),
+            )
+        ]
 
         for i in range(len(d)):
             assert abs(d[i] - STEP_SIZE) <= 0.001
@@ -685,5 +685,5 @@ def main():
     print(t1 - t0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -47,9 +47,7 @@ class LQRDynamicController(ControllerBase):
         matrix_state_[3][0] = (e_phi - e_phi_old) / ts
 
         steering_angle_feedback = np.atan2(-matrix_k_.dot(matrix_state_)[0][0], 1.0)
-        steering_angle_forward = self.ComputeFeedForward(
-            node, ref_path.ccurv[target_ind], matrix_k_
-        )
+        steering_angle_forward = self.ComputeFeedForward(node, ref_path.ccurv[target_ind], matrix_k_)
         # 后处理
         delta = process_wheel_angle(
             steering_angle_feedback + steering_angle_forward,
@@ -169,20 +167,14 @@ class LQRDynamicController(ControllerBase):
 
         while num_iteration < max_num_iteration and diff > tolerance:
             num_iteration += 1
-            P_next = (
-                AT @ P @ A
-                - (AT @ P @ B + M) @ np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT)
-                + Q
-            )
+            P_next = AT @ P @ A - (AT @ P @ B + M) @ np.linalg.pinv(R + BT @ P @ B) @ (BT @ P @ A + MT) + Q
 
             # check the difference between P and P_next
             diff = (abs(P_next - P)).max()
             P = P_next
 
         if num_iteration >= max_num_iteration:
-            log_controller_warning(
-                f"LQR solver cannot converge to a solution, last consecutive result diff is: {diff}"
-            )
+            log_controller_warning(f"LQR solver cannot converge to a solution, last consecutive result diff is: {diff}")
 
         K = np.linalg.inv(BT @ P @ B + R) @ (BT @ P @ A + MT)
 
@@ -205,10 +197,7 @@ class LQRDynamicController(ControllerBase):
         c_f_ = config.c_f
         c_r_ = config.c_r
 
-        kv = (
-            l_r_ * mass_ / 2.0 / c_f_ / wheelbase_
-            - l_f_ * mass_ / 2.0 / c_r_ / wheelbase_
-        )
+        kv = l_r_ * mass_ / 2.0 / c_f_ / wheelbase_ - l_f_ * mass_ / 2.0 / c_r_ / wheelbase_
 
         v = node.v
 
@@ -220,10 +209,7 @@ class LQRDynamicController(ControllerBase):
                 wheelbase_ * ref_curvature
                 + kv * v * v * ref_curvature
                 - matrix_k_[0][2]
-                * (
-                    l_r_ * ref_curvature
-                    - l_f_ * mass_ * v * v * ref_curvature / 2.0 / c_r_ / wheelbase_
-                )
+                * (l_r_ * ref_curvature - l_f_ * mass_ * v * v * ref_curvature / 2.0 / c_r_ / wheelbase_)
             )
 
         return steer_angle_feedforward

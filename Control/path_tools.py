@@ -11,8 +11,7 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
 
-import CurvesGenerator.cubic_spline as cs
-import CurvesGenerator.reeds_shepp as rs
+import Planning.CurvesGenerator.reeds_shepp as rs
 
 
 def generate_path(s, max_steer=0.30, wheelbase=2.5, curvesgenerator=rs):
