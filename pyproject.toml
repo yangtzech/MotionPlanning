@@ -101,7 +101,7 @@ dependencies = [
 [tool.ruff]
 line-length = 120
 lint.select = ["C", "E", "F", "W"]
-lint.ignore = ["E501", "E203"]
+lint.ignore = ["E203"]
 lint.extend-select = ["I"]
 
 [tool.ruff.format]
