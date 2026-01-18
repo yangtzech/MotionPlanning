@@ -2,12 +2,12 @@ import math
 
 import matplotlib.pyplot as plt
 
-from . import draw
-from .animation_updater import get_animator
-from .path_structs import PATH, Node, Nodes
-from .path_tools import generate_path
-from .performance_monitor import get_performance_monitor
-from .utils import pi_2_pi
+from ..common.utils import pi_2_pi
+from ..control.path_structs import PATH, Node, Nodes
+from ..control.path_tools import generate_path
+from ..simulation import draw
+from ..simulation.animation_updater import get_animator
+from ..simulation.performance_monitor import get_performance_monitor
 
 is_paused = False
 

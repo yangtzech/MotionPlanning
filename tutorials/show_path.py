@@ -2,8 +2,8 @@ import math
 
 import matplotlib.pyplot as plt
 
-from .config_control import Config
-from .path_tools import generate_path
+from pyauto.control.config_control import Config
+from pyauto.control.path_tools import generate_path
 
 config = Config()
 

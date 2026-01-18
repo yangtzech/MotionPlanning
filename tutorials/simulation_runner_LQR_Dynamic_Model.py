@@ -1,4 +1,4 @@
-from .generic_simulator import plot_tracking_results, run_single_simulation
+from generic_simulator import plot_tracking_results, run_single_simulation
 
 
 def main():

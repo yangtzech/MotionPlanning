@@ -85,7 +85,7 @@ def draw_car(x, y, yaw, steer, C, color="black"):
 
 
 if __name__ == "__main__":
-    from .config_control import Config
+    from ..control.config_control import Config
 
     draw_car(0, 0, 0, 0.2, Config)
     plt.show()

@@ -2,23 +2,24 @@
 
 import argparse
 
-from .config_control import Config
-from .logger import log_controller_info
-from .pid_speed_control import PIDSpeedController
-from .simulation_common import run_simulation
-from .simulation_runner_configurable import plot_tracking_results
+from simulation_runner_configurable import plot_tracking_results
+
+from pyauto.common.logger import log_controller_info
+from pyauto.control.config_control import Config
+from pyauto.control.pid_speed_control import PIDSpeedController
+from pyauto.simulation.simulation_common import run_simulation
 
 
 def get_controller_class(controller_name):
     """根据控制器名称获取对应的控制器类"""
     # 导入所有控制器类
-    from .LQR_Dynamic_Model import LQRDynamicController
-    from .LQR_Kinematic_Model import LQRKinematicController
-    from .MPC_Frenet_Frame import MPC_Frenet_FrameController
-    from .MPC_XY_Frame import MPC_XY_FrameController
-    from .Pure_Pursuit import PurePursuitController
-    from .Rear_Wheel_Feedback import RearWheelFeedbackController
-    from .Stanley import StanleyController
+    from pyauto.control.LQR_Dynamic_Model import LQRDynamicController
+    from pyauto.control.LQR_Kinematic_Model import LQRKinematicController
+    from pyauto.control.MPC_Frenet_Frame import MPC_Frenet_FrameController
+    from pyauto.control.MPC_XY_Frame import MPC_XY_FrameController
+    from pyauto.control.Pure_Pursuit import PurePursuitController
+    from pyauto.control.Rear_Wheel_Feedback import RearWheelFeedbackController
+    from pyauto.control.Stanley import StanleyController
 
     controllers = {
         "LQRDynamic": LQRDynamicController,

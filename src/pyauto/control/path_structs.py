@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 
-from .utils import angle_normalize
+from ..common.utils import angle_normalize
 
 
 class Node:

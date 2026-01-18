@@ -7,10 +7,10 @@ import math
 
 import numpy as np
 
+from ..common.utils import process_wheel_angle
 from .config_control import Config
 from .controller_base import ControlCommand, ControllerBase
 from .path_structs import PATH, Node
-from .utils import process_wheel_angle
 
 
 class StanleyController(ControllerBase):

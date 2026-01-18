@@ -2,12 +2,12 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-from .config_control import Config
-from .pid_speed_control import PIDSpeedController
-from .Pure_Pursuit import PurePursuitController
-from .Rear_Wheel_Feedback import RearWheelFeedbackController
-from .simulation_common import run_simulation
-from .Stanley import StanleyController
+from pyauto.control.config_control import Config
+from pyauto.control.pid_speed_control import PIDSpeedController
+from pyauto.control.Pure_Pursuit import PurePursuitController
+from pyauto.control.Rear_Wheel_Feedback import RearWheelFeedbackController
+from pyauto.control.Stanley import StanleyController
+from pyauto.simulation.simulation_common import run_simulation
 
 
 def get_lat_controller(name, config):
