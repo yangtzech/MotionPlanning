@@ -362,7 +362,7 @@ def _ccsc_lrsl(x, y, phi, paths):
         paths = set_path(paths, [t, -0.5 * PI, u, v], ["R", "WB", "S", "R"])
     flag, t, u, v = LRSL(-x, -y, phi)
     if flag:
-        paths = set_path(paths, [-t, -0.5 * PI, -u, -v], ["R", "WB", "S", "R"])
+        paths = set_path(paths, [-t, 0.5 * PI, -u, -v], ["R", "WB", "S", "R"])
     return paths
 
 
@@ -378,7 +378,7 @@ def _ccsc_lrsr(x, y, phi, paths):
         paths = set_path(paths, [t, -0.5 * PI, u, v], ["R", "WB", "S", "WB"])
     flag, t, u, v = LRSR(-x, -y, phi)
     if flag:
-        paths = set_path(paths, [-t, -0.5 * PI, -u, -v], ["R", "WB", "S", "WB"])
+        paths = set_path(paths, [-t, 0.5 * PI, -u, -v], ["R", "WB", "S", "WB"])
     return paths
 
 
