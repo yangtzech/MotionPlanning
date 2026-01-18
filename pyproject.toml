@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=75.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "motionplanning"
+name = "PyAuto"
 version = "0.1.0"
-description = "Add your description here"
+description = "Motion planning and control toolkit"
 readme = "README.md"
 requires-python = ">=3.12.9"
 dependencies = [
@@ -97,6 +101,16 @@ dependencies = [
     "websockets==15.0.0",
     "wheel==0.45.1",
 ]
+
+[project.scripts]
+pyauto = "pyauto.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pyauto*"]
 
 [tool.ruff]
 line-length = 120
