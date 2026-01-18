@@ -101,7 +101,7 @@ dependencies = [
 [tool.ruff]
 line-length = 120
 lint.select = ["C", "E", "F", "W"]
-lint.ignore = ["E501", "E203", "C901"]  # 添加C901忽略复杂度警告
+lint.ignore = ["E501", "E203"]
 lint.extend-select = ["I"]
 
 [tool.ruff.format]

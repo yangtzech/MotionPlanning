@@ -349,33 +349,50 @@ def is_collision(x, y, yaw, P):
 
 def calc_rs_path_cost(rspath):
     cost = 0.0
+    cost += _calc_length_cost(rspath.lengths)
+    cost += _calc_gear_cost(rspath.lengths)
+    cost += _calc_steer_angle_cost(rspath.ctypes)
+    cost += _calc_steer_change_cost(rspath.ctypes)
+    return cost
 
-    for lr in rspath.lengths:
+
+def _calc_length_cost(lengths):
+    cost = 0.0
+    for lr in lengths:
         if lr >= 0:
             cost += 1
         else:
             cost += abs(lr) * C.BACKWARD_COST
+    return cost
 
-    for i in range(len(rspath.lengths) - 1):
-        if rspath.lengths[i] * rspath.lengths[i + 1] < 0.0:
+
+def _calc_gear_cost(lengths):
+    cost = 0.0
+    for i in range(len(lengths) - 1):
+        if lengths[i] * lengths[i + 1] < 0.0:
             cost += C.GEAR_COST
+    return cost
 
-    for ctype in rspath.ctypes:
+
+def _calc_steer_angle_cost(ctypes):
+    cost = 0.0
+    for ctype in ctypes:
         if ctype != "S":
             cost += C.STEER_ANGLE_COST * abs(C.MAX_STEER)
+    return cost
 
-    nctypes = len(rspath.ctypes)
+
+def _calc_steer_change_cost(ctypes):
+    nctypes = len(ctypes)
     ulist = [0.0 for _ in range(nctypes)]
-
     for i in range(nctypes):
-        if rspath.ctypes[i] == "R":
+        if ctypes[i] == "R":
             ulist[i] = -C.MAX_STEER
-        elif rspath.ctypes[i] == "WB":
+        elif ctypes[i] == "WB":
             ulist[i] = C.MAX_STEER
-
+    cost = 0.0
     for i in range(nctypes - 1):
         cost += C.STEER_CHANGE_COST * abs(ulist[i + 1] - ulist[i])
-
     return cost
 
 

@@ -463,33 +463,28 @@ def trailer_motion_model(x, y, yaw, yawt, D, d, L, delta):
 def calc_rs_path_cost(rspath, yawt):
     cost = 0.0
 
-    for lr in rspath.lengths:
-        if lr >= 0:
-            cost += 1
-        else:
-            cost += abs(lr) * C.BACKWARD_COST
-
-    for i in range(len(rspath.lengths) - 1):
-        if rspath.lengths[i] * rspath.lengths[i + 1] < 0.0:
+    # Calculate cost for lengths and gear changes
+    for i, lr in enumerate(rspath.lengths):
+        cost += 1 if lr >= 0 else abs(lr) * C.BACKWARD_COST
+        if i < len(rspath.lengths) - 1 and rspath.lengths[i] * rspath.lengths[i + 1] < 0.0:
             cost += C.GEAR_COST
 
+    # Calculate steer angle and change costs
+    ulist = []
     for ctype in rspath.ctypes:
         if ctype != "S":
             cost += C.STEER_ANGLE_COST * abs(C.MAX_STEER)
+        if ctype == "R":
+            ulist.append(-C.MAX_STEER)
+        elif ctype == "WB":
+            ulist.append(C.MAX_STEER)
+        else:
+            ulist.append(0.0)
 
-    nctypes = len(rspath.ctypes)
-    ulist = [0.0 for _ in range(nctypes)]
+    cost += sum(C.STEER_CHANGE_COST * abs(ulist[i + 1] - ulist[i]) for i in range(len(ulist) - 1))
 
-    for i in range(nctypes):
-        if rspath.ctypes[i] == "R":
-            ulist[i] = -C.MAX_STEER
-        elif rspath.ctypes[i] == "WB":
-            ulist[i] = C.MAX_STEER
-
-    for i in range(nctypes - 1):
-        cost += C.STEER_CHANGE_COST * abs(ulist[i + 1] - ulist[i])
-
-    cost += C.SCISSORS_COST * sum([abs(rs.pi_2_pi(x - y)) for x, y in zip(rspath.yaw, yawt)])
+    # Scissors cost
+    cost += C.SCISSORS_COST * sum(abs(rs.pi_2_pi(x - y)) for x, y in zip(rspath.yaw, yawt))
 
     return cost
 
