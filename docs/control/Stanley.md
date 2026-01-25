@@ -37,6 +37,8 @@ $$
 
 完整的 `ComputeControlCommand` 方法实现：
 
+[:material-file-code: 查看源代码](https://github.com/yangtzech/MotionPlanning/blob/master/src/pyauto/control/Stanley.py#L21-L41){ .md-button }
+
 ```python title="src/pyauto/control/Stanley.py"
 --8<-- "src/pyauto/control/Stanley.py:compute_control_command"
 ```
