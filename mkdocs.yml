@@ -70,7 +70,8 @@ extra_javascript:
 nav:
   - Overview: index.md
   - Control:
-      - 基本说明: control/README.md
+      - 说明: control/README.md
+      - 基本定义: control/Definition.md
       - 车辆模型: control/VehicleModel.md
       - Stanley: control/Stanley.md
       - PurePursuit: control/PurePursuit.md

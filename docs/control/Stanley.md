@@ -4,8 +4,6 @@
 
 Stanley 控制器是斯坦福大学为其无人车 Stanley 开发的路径跟踪算法，该算法在 2005 年 DARPA 挑战赛中帮助 Stanley 赢得冠军。该算法结合了横向误差和航向误差，能够有效地进行路径跟踪控制[@Thrun2006Stanley;@CodingHaJiMiZiDongJiaShiJiYuJiHeMoXingDeGenZongFangFastanleySuanFa]。
 
-**参考文献**: [Stanley: The Robot that Won the DARPA Grand Challenge](http://robots.stanford.edu/papers/thrun.stanley05.pdf)
-
 ## 控制原理
 
 ### 核心思想
@@ -212,12 +210,6 @@ delta = -e_phi * np.sign(node.v) + math.atan2(-k * ed, v_safe)
 - 增大增益系数 k
 - 引入前馈
 
-## 参考资料
-
-1. [Stanley: The Robot that Won the DARPA Grand Challenge (2005)](http://robots.stanford.edu/papers/thrun.stanley05.pdf)
-2. [Automatic Steering Methods for Autonomous Automobile Path Tracking](https://www.ri.cmu.edu/pub_files/2009/2/Automatic_Steering_Methods_for_Autonomous_Automobile_Path_Tracking.pdf)
-3. [Apollo 自动驾驶控制模块文档](https://github.com/ApolloAuto/apollo/tree/master/modules/control)
-4. `Coding哈基米. 【自动驾驶】基于几何模型的跟踪方法——stanley算法[EB]([日期不详]). [https://blog.csdn.net/m0_72429709/article/details/145463124](https://blog.csdn.net/m0_72429709/article/details/145463124).`
 
 ## 相关文档
 
