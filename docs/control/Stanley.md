@@ -35,33 +35,10 @@ $$
 
 ### 核心代码
 
-```python
-class StanleyController(ControllerBase):
-    def __init__(self, config: Config):
-        super().__init__(config)
-        self.config = config
+完整的 `ComputeControlCommand` 方法实现：
 
-    def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
-        # 1. 计算前轴中心位置
-        fx = node.x + self.config.WB * math.cos(node.yaw)
-        fy = node.y + self.config.WB * math.sin(node.yaw)
-        node_front = Node(x=fx, y=fy, yaw=node.yaw, v=node.v, 
-                         direct=node.direct, config=self.config)
-
-        # 2. 找到参考路径上最近点
-        target_ind = ref_path.calc_nearest_ind(node_front)
-  
-        # 3. 计算横向误差和航向误差
-        ed, e_phi = ref_path.cal_ed_e_phi(node, target_ind)
-
-        # 4. Stanley 控制律
-        delta = -e_phi * np.sign(node.v) + math.atan2(-self.config.stanley.k * ed, abs(node.v))
-
-        # 5. 限制转向角范围
-        delta = self.ClampSteeringAngle(delta)
-
-        return ControlCommand(steer=delta, target_ind=target_ind, 
-                            lat_error=ed, yaw_error=e_phi)
+```python title="src/pyauto/control/Stanley.py"
+--8<-- "src/pyauto/control/Stanley.py:compute_control_command"
 ```
 
 ### 实现细节
@@ -70,9 +47,8 @@ class StanleyController(ControllerBase):
 
 Stanley 控制器基于**前轴中心**而非车辆质心进行控制：
 
-```python
-fx = node.x + self.config.WB * math.cos(node.yaw)
-fy = node.y + self.config.WB * math.sin(node.yaw)
+```python title="前轴中心计算"
+--8<-- "src/pyauto/control/Stanley.py:front_axle_center"
 ```
 
 其中 `WB` 是车辆轴距 (wheelbase)，从质心到前轴的距离。
@@ -100,22 +76,19 @@ fy = node.y + self.config.WB * math.sin(node.yaw)
 
 在实际应用中，应对零速度或极低速度情况进行保护：
 
-```python
-# 避免除零
-v_safe = max(abs(node.v), 1e-3)
-delta = -e_phi * np.sign(node.v) + math.atan2(-k * ed, v_safe)
+```python title="零速度保护"
+--8<-- "src/pyauto/control/Stanley.py:zero_speed_protection"
 ```
 
 ## 参数配置
 
 ### 配置类定义
 
-```python
-class StanleyConfig:
-    k = 0.5  # 横向误差增益系数
+```python title="src/pyauto/config/config.py"
+--8<-- "src/pyauto/config/config.py:stanley_config"
 ```
 
-## 优缺点分析
+### 参数调优指南
 
 ### 优点
 
@@ -209,13 +182,3 @@ delta = -e_phi * np.sign(node.v) + math.atan2(-k * ed, v_safe)
 - 降低车速
 - 增大增益系数 k
 - 引入前馈
-
-
-## 相关文档
-
-- [项目 README](./README.md)
-- [Pure Pursuit 控制器](./PurePursuit.md)
-- [Rear Wheel Feedback 控制器](./RearWheelFeedback.md)
-- [LQR 控制器](./LQR.md)
-- [MPC 控制器](./MPC.md)
-- [车辆模型说明](./VehicleModel.md)

@@ -70,9 +70,13 @@ class PurePursuitConfig:
     # ...PurePursuit专用参数...
 
 
+# --8<-- [start:stanley_config]
 class StanleyConfig:
-    k = 0.5
+    k = 0.5  # 横向误差增益系数
     # ...Stanley专用参数...
+
+
+# --8<-- [end:stanley_config]
 
 
 class RearWheelFeedbackConfig:
