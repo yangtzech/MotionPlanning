@@ -26,7 +26,8 @@ class StanleyController(ControllerBase):
         target_ind = ref_path.calc_nearest_ind(node_front)
         ed, e_phi = ref_path.cal_ed_e_phi(node, target_ind)
 
-        delta = -e_phi * np.sign(node.v) + math.atan2(-self.config.stanley.k * ed, abs(node.v))
+        v_safe = max(abs(node.v), 1e-3)
+        delta = -e_phi * np.sign(node.v) + math.atan2(-self.config.stanley.k * ed, v_safe)
 
         # 后处理
         delta = self.ClampSteeringAngle(delta)
