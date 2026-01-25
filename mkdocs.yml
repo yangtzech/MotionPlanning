@@ -39,6 +39,7 @@ plugins:
       display_code: false
   - bibtex:
       bib_file: docs/ref/refs.bib
+      csl_file: docs/ref/ref.csl # GB-T-7714-2025（顺序编码，双语).csl
 
 markdown_extensions:
   - pymdownx.arithmatex:
