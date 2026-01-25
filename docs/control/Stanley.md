@@ -196,3 +196,5 @@ delta = -e_phi * np.sign(node.v) + math.atan2(-k * ed, v_safe)
 下图展示了 Stanley 控制器的实际运行效果：
 
 ![Stanley 控制器仿真动画](image/Stanley/stanley.gif)
+
+## 参考文献

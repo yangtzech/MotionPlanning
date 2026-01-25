@@ -241,3 +241,5 @@ if ind >= self.ind_end:
 下图展示了 Pure Pursuit 控制器的实际运行效果：
 
 ![Pure Pursuit 控制器仿真动画](image/PurePursuit/purepursuit.gif)
+
+## 参考文献

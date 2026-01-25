@@ -189,3 +189,5 @@ controller = ControllerFactory.create("rear_wheel_feedback", config)
 下图展示了 RearWheelFeedback控制器的实际运行效果：
 
 ![Pure Pursuit 控制器仿真动画](image/RearWheelFeedback/rearwheelfeedback.gif)
+
+## 参考文献
