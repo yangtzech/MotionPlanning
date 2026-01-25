@@ -21,10 +21,18 @@ def on_key(event):
 
 
 def _initialize_simulation_components(
-    show_animation, path_x, path_y, config, show_realtime_performance, controller_name
+    show_animation, path_x, path_y, config, show_realtime_performance, controller_name, save_gif=False, gif_path=None
 ):
     """初始化动画和性能监控组件"""
-    animator = get_animator(path_x, path_y, config) if show_animation else None
+    from .gif_animation_updater import GifAnimationUpdater
+
+    if show_animation and save_gif:
+        animator = GifAnimationUpdater(path_x, path_y, config, gif_path=gif_path)
+    elif show_animation:
+        animator = get_animator(path_x, path_y, config)
+    else:
+        animator = None
+
     perf_monitor = get_performance_monitor(controller_name) if show_realtime_performance else None
     return animator, perf_monitor
 
@@ -220,6 +228,8 @@ def run_simulation(
     show_realtime_performance=False,
     controller_name="Controller",
     lat_lon_separate=True,
+    save_gif=False,
+    gif_path=None,
 ):
     """
     Run path tracking simulation.
@@ -233,6 +243,8 @@ def run_simulation(
         show_realtime_performance: whether to show real-time performance graphs (支持多段轨迹显示)
         controller_name: name of the controller for performance monitor
         lat_lon_separate: whether to use separate lateral and longitudinal controllers
+        save_gif: whether to save animation as GIF
+        gif_path: path to save GIF file
     Returns:
         dict with all_time, all_v_actual, all_v_ref, all_lat_error, all_yaw_error
     """
@@ -247,7 +259,7 @@ def run_simulation(
 
     # 初始化动画和性能监控
     animator, perf_monitor = _initialize_simulation_components(
-        show_animation, path_x, path_y, config, show_realtime_performance, controller_name
+        show_animation, path_x, path_y, config, show_realtime_performance, controller_name, save_gif, gif_path
     )
 
     for seg_id, (cx, cy, cyaw, ccurv, cdirect) in enumerate(zip(x, y, yaw, cur, direct)):

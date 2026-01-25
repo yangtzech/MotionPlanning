@@ -22,7 +22,7 @@ Pure Pursuit 控制器的核心思想是：
 
 图中关键要素：
 
-- **后轴中心（ $O_{R}}$ ）**：车辆的参考点和坐标原点
+- **后轴中心（$O_{R}$）**：车辆的参考点和坐标原点
 - **前视点（G）**：参考路径上距离后轴中心前视距离 $L_f$ 的目标点
 - **圆弧轨迹**：车辆从当前位置到前视点的预期轨迹，半径为 $R$
 - **方位角（$\alpha$）**：前视点相对于车辆航向的角度
@@ -76,38 +76,12 @@ $$
 
 ### 核心代码
 
-```python
-class PurePursuitController(ControllerBase):
-    def __init__(self, config: Config):
-        super().__init__(config)
-        self.config = config
+完整的 `ComputeControlCommand` 方法实现：
 
-    def ComputeControlCommand(self, node: Node, reference: PATH) -> ControlCommand:
-        ref_path = reference
-  
-        # 1. 计算前视距离并找到前视点
-        ind, Lf = ref_path.look_ahead_index(node)
-        tx = ref_path.cx[ind]
-        ty = ref_path.cy[ind]
-  
-        # 2. 计算前视点相对于车辆的方位角
-        alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
-  
-        # 3. Pure Pursuit 控制律
-        delta = math.atan2(2.0 * self.config.WB * math.sin(alpha), Lf)
-  
-        # 4. 计算误差信息（用于监控）
-        ed, e_phi = ref_path.cal_ed_e_phi(node, ind)
+[:material-file-code: 查看源代码](https://github.com/yangtzech/MotionPlanning/blob/master/src/pyauto/control/Pure_Pursuit.py#L18-L46){ .md-button }
 
-        # 5. 限制转向角范围
-        delta = self.ClampSteeringAngle(delta)
-
-        return ControlCommand(
-            steer=delta,
-            target_ind=ind,
-            lat_error=ed,
-            yaw_error=e_phi,
-        )
+```python title="src/pyauto/control/Pure_Pursuit.py"
+--8<-- "src/pyauto/control/Pure_Pursuit.py:compute_control_command"
 ```
 
 ### 实现细节
@@ -116,29 +90,16 @@ class PurePursuitController(ControllerBase):
 
 前视点在参考路径上按照前视距离进行搜索：
 
-```python
-def look_ahead_index(self, node):
-    if self.index_old is None:
-        self.index_old = self.calc_nearest_ind(node)
-  
-    # 计算前视距离（与速度相关）
-    Lf = config.kf * node.v + config.Ld
-  
-    # 沿路径搜索满足前视距离的点
-    for ind in range(self.index_old, self.ind_end + 1):
-        if self.calc_distance(node, ind) > Lf:
-            self.index_old = ind
-            return ind, Lf
-  
-    return self.ind_end, Lf
+```python title="前视点查找"
+--8<-- "src/pyauto/control/Pure_Pursuit.py:look_ahead"
 ```
 
-#### 2. 方位角计算
+#### 2. 控制律计算
 
-方位角 $\alpha$ 是前视点相对于车辆航向的角度差：
+方位角 $\alpha$ 和转向角的计算：
 
-```python
-alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
+```python title="Pure Pursuit 控制律"
+--8<-- "src/pyauto/control/Pure_Pursuit.py:control_law"
 ```
 
 | 前视点位置 | $\alpha$ 符号 | 转向方向 |
@@ -162,10 +123,8 @@ Lf = config.kf * node.v + config.Ld
 
 ### 配置类定义
 
-```python
-class PurePursuitConfig:
-    Ld = 2.6  # 基础前视距离 [m]
-    kf = 0.1  # 前视增益系数 [s]
+```python title="src/pyauto/config/config.py"
+--8<-- "src/pyauto/config/config.py:pure_pursuit_config"
 ```
 
 ## 优缺点分析

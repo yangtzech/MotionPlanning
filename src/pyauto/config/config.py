@@ -64,10 +64,13 @@ class PIDConfig:
     Kp = 0.3  # proportional gain
 
 
+# --8<-- [start:pure_pursuit_config]
 class PurePursuitConfig:
-    Ld = 2.6
-    kf = 0.1
-    # ...PurePursuit专用参数...
+    Ld = 2.6  # 基础前视距离 [m]
+    kf = 0.1  # 前视增益系数 [s]
+
+
+# --8<-- [end:pure_pursuit_config]
 
 
 # --8<-- [start:stanley_config]
@@ -79,9 +82,13 @@ class StanleyConfig:
 # --8<-- [end:stanley_config]
 
 
+# --8<-- [start:rear_wheel_feedback_config]
 class RearWheelFeedbackConfig:
-    K_theta = 1.0
-    K_e = 0.5
+    K_theta = 1.0  # 航向误差增益系数
+    K_e = 0.5  # 横向误差增益系数
+
+
+# --8<-- [end:rear_wheel_feedback_config]
 
 
 class LQRConfig:

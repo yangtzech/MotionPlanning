@@ -1,6 +1,7 @@
 """通用模拟运行器，用于运行各种控制器的仿真"""
 
 import argparse
+import os
 
 from simulation_runner_configurable import plot_tracking_results
 
@@ -43,7 +44,7 @@ def is_mpc_controller(controller_name):
     return controller_name in mpc_controllers
 
 
-def run_single_simulation(controller_name, config_override=None, show_realtime_performance=False):
+def run_single_simulation(controller_name, config_override=None, show_realtime_performance=False, save_gif=True):
     """运行单个控制器的仿真"""
     config = Config()
 
@@ -66,6 +67,18 @@ def run_single_simulation(controller_name, config_override=None, show_realtime_p
     controller_class = get_controller_class(controller_name)
     controller = controller_class(config)
 
+    # 设置GIF保存路径（相对于项目根目录）
+    if save_gif:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(script_dir)  # tutorials的上一级是项目根目录
+        gif_path = os.path.join(
+            project_root, "docs", "control", "image", controller_name, f"{controller_name.lower()}.gif"
+        )
+        show_animation = True  # 需要动画才能生成GIF
+    else:
+        gif_path = None
+        show_animation = True  # 默认显示动画
+
     # 根据控制器类型选择仿真参数
     if is_mpc_controller(controller_name):
         # MPC控制器使用独立控制模式
@@ -74,9 +87,12 @@ def run_single_simulation(controller_name, config_override=None, show_realtime_p
             states,
             controller,
             lon_controller=None,
+            show_animation=show_animation,
             show_realtime_performance=show_realtime_performance,
             controller_name=controller_name,
             lat_lon_separate=False,
+            save_gif=save_gif,
+            gif_path=gif_path,
         )
     else:
         # 其他控制器使用PID速度控制器
@@ -86,8 +102,11 @@ def run_single_simulation(controller_name, config_override=None, show_realtime_p
             states,
             controller,
             lon_controller,
+            show_animation=show_animation,
             show_realtime_performance=show_realtime_performance,
             controller_name=controller_name,
+            save_gif=save_gif,
+            gif_path=gif_path,
         )
 
     result["controller"] = controller_name
