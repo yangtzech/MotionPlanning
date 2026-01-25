@@ -44,7 +44,7 @@ class RearWheelFeedbackController(ControllerBase):
             - self.config.rear_wheel_feedback.K_e * vr * math.sin(e_phi) * ed / e_phi
         )
         # 6. 计算前轮转向角
-        delta = math.atan2(self.config.WB * yaw_rate, vr)
+        delta = math.atan(self.config.WB * yaw_rate / vr)
         # --8<-- [end:control_law]
 
         # 7. 限制转向角范围

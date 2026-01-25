@@ -2,7 +2,7 @@ from generic_simulator import plot_tracking_results, run_single_simulation
 
 
 def main():
-    result = run_single_simulation("RearWheelFeedback")
+    result = run_single_simulation("RearWheelFeedback", save_gif=True)
     plot_tracking_results([result])
 
 

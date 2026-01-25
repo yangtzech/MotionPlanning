@@ -74,6 +74,7 @@ def run_single_simulation(controller_name, config_override=None, show_realtime_p
         gif_path = os.path.join(
             project_root, "docs", "control", "image", controller_name, f"{controller_name.lower()}.gif"
         )
+        os.makedirs(os.path.dirname(gif_path), exist_ok=True)
         show_animation = True  # 需要动画才能生成GIF
     else:
         gif_path = None
