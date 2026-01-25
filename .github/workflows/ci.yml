@@ -81,7 +81,7 @@ jobs:
         run: |
           # python -m pip install --upgrade pip
           # python -m pip install -e .
-          python -m pip install mkdocs-material mkdocs-marimo
+          python -m pip install mkdocs-material mkdocs-marimo mkdocs-bibtex pandoc
 
       - name: Build and deploy docs
         run: mkdocs gh-deploy --force
