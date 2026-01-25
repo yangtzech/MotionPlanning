@@ -14,6 +14,13 @@ Stanley 控制器通过两个误差项来计算前轮转向角：
    假设无横向误差，仅通过转动前轮，使得前路与轨迹切线一致即可跟上，因此可令 $|\delta_{\phi}(t)| = e_{\phi} $
 2. **横向误差校正项**：消除车辆前轴中心到参考轨迹的横向距离
 
+### 几何原理
+
+下图展示了 Stanley 控制器的几何原理，其中 F 为车辆前轴中心，H 为参考轨迹上的最近点，C 为前轮方向与最近点切线方向的交点：
+
+![Stanley 几何原理图](image/Stanley/stanley_geometry_diagram.png)
+
+
 ### 控制律
 
 Stanley 控制器的转向角计算公式为：
@@ -184,3 +191,8 @@ delta = -e_phi * np.sign(node.v) + math.atan2(-k * ed, v_safe)
 - 降低车速
 - 增大增益系数 k
 - 引入前馈
+## 仿真演示
+
+下图展示了 Stanley 控制器的实际运行效果：
+
+![Stanley 控制器仿真动画](image/Stanley/stanley.gif)

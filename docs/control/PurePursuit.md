@@ -16,6 +16,17 @@ Pure Pursuit 控制器的核心思想是：
 
 ### 几何推导
 
+下图展示了 Pure Pursuit 控制器的几何原理：
+
+![Pure Pursuit 几何原理图](image/PurePursuit/purepursuit_geometry_diagram.png)
+
+图中关键要素：
+
+- **后轴中心（ $O_{R}}$ ）**：车辆的参考点和坐标原点
+- **前视点（G）**：参考路径上距离后轴中心前视距离 $L_f$ 的目标点
+- **圆弧轨迹**：车辆从当前位置到前视点的预期轨迹，半径为 $R$
+- **方位角（$\alpha$）**：前视点相对于车辆航向的角度
+
 设车辆后轴中心为原点，航向为 x 轴正方向，前视点相对于车辆的方位角为 $\alpha$，前视距离为 $L_f$，车辆轴距为 $L$（即 WB）。
 
 根据圆弧几何关系，可以推导出曲率 $\kappa$：
@@ -267,3 +278,9 @@ if ind >= self.ind_end:
 | 核心思想 | 追踪前视点   | 消除航向和横向误差  |
 | 误差项   | 无显式误差项 | 航向误差 + 横向误差 |
 | 参数     | 前视距离     | 增益系数 k          |
+
+## 仿真演示
+
+下图展示了 Pure Pursuit 控制器的实际运行效果：
+
+![Pure Pursuit 控制器仿真动画](image/PurePursuit/purepursuit.gif)
